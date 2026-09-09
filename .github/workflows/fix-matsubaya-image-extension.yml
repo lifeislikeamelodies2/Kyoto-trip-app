@@ -1,0 +1,36 @@
+name: Fix Matsubaya image extension
+
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-matsubaya-image-extension.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rename AVIF asset and update data
+        shell: bash
+        run: |
+          set -euo pipefail
+          if file assets/spots/matsubaya.jpg | grep -qi 'AVIF'; then
+            mv assets/spots/matsubaya.jpg assets/spots/matsubaya.avif
+          fi
+          sed -i "s#assets/spots/matsubaya.jpg#assets/spots/matsubaya.avif#g" data.js
+          node --check data.js
+      - name: Commit fix
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A assets/spots/matsubaya.* data.js
+          if git diff --cached --quiet; then
+            echo 'No changes to commit.'
+          else
+            git commit -m 'Fix Matsubaya image extension'
+            git push
+          fi

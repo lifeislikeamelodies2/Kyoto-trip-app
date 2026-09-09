@@ -1,0 +1,46 @@
+name: Finalize creative tag cleanup
+
+on:
+  push:
+    paths:
+      - '.github/workflows/finalize-tag-cleanup.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Normalize creative heroine tags
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json, re
+          p = Path('data.js')
+          t = p.read_text(encoding='utf-8')
+          m = re.search(r"const FOOD_SPOTS = (\[.*?\]);\s*const SPOTS = (\[.*\]);\s*$", t, re.S)
+          foods = json.loads(m.group(1)); spots = json.loads(m.group(2))
+          for s in spots:
+            sid=s.get('id')
+            if sid in ('pontocho','shimabara'):
+              s['tags']=['長州','花街','創作']
+            elif sid in ('fujii-home','saeki-home'):
+              s['tags']=['新選組','長州','創作']
+            elif sid in ('asa-former-home','asa-home'):
+              s['tags']=['土佐','創作']
+            elif sid in ('honma-seiichiro','omiya-site'):
+              s['tags']=['土佐','事件地']
+          out=t[:m.start()]+'const FOOD_SPOTS = '+json.dumps(foods,ensure_ascii=False,separators=(',',':'))+';\nconst SPOTS = '+json.dumps(spots,ensure_ascii=False,separators=(',',':'))+';\n'
+          p.write_text(out,encoding='utf-8')
+          PY
+          node --check data.js
+      - name: Commit
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data.js
+          git commit -m 'Normalize creative heroine tags'
+          git push

@@ -41,19 +41,92 @@
     });
   };
 
+  let topClockTimer = null;
+  const EMERGENCY_REGISTER_URL = 'https://script.google.com/macros/s/AKfycbwDPIurCh2FROAdC8rbYtCHq1WXUSndcDz-UiEmpfCvI9MLSs90P1k4HYAJpxaF4gRM0g/exec?mode=register';
+
+  // タイムテーブル確定後は、ここだけ差し替えればTOPの次予定表示が動きます。
+  const TOP_NEXT_PLAN = {
+    title: 'タイムテーブル未設定',
+    startAt: null, // 例: '2026-12-04T18:30:00+09:00'
+    moveAt: null,  // 例: '2026-12-04T18:10:00+09:00'
+    mapQuery: ''
+  };
+
+  const formatPlanTime = (value) => {
+    if (!value) return '--:--';
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return '--:--';
+    return new Intl.DateTimeFormat('ja-JP', {
+      hour:'2-digit', minute:'2-digit', hour12:false, timeZone:'Asia/Tokyo'
+    }).format(d);
+  };
+
+  const minutesUntil = (value) => {
+    if (!value) return '— 分';
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return '— 分';
+    const diff = d.getTime() - Date.now();
+    if (diff <= 0) return '0 分';
+    return `${Math.ceil(diff / 60000)} 分`;
+  };
+
   function renderTop() {
     document.title = '京都旅行';
     document.body.className = 'top-page';
+
+    const nextMapQuery = TOP_NEXT_PLAN.mapQuery ? encodeURIComponent(TOP_NEXT_PLAN.mapQuery) : '';
+    const nextApple = nextMapQuery ? `https://maps.apple.com/?q=${nextMapQuery}` : '';
+    const nextGoogle = nextMapQuery ? `https://www.google.com/maps/search/?api=1&query=${nextMapQuery}` : '';
+
     app.innerHTML = `
       <main class="top-shell">
         <div class="top-art">
           <img id="topImage" src="${esc(TOP_IMAGE_URL)}" alt="京都旅行 TOP画像" referrerpolicy="no-referrer">
           <div class="top-image-error" id="topImageError" hidden>TOP画像を読み込めませんでした。</div>
         </div>
+
         <nav class="top-actions" aria-label="メインメニュー">
           <a class="top-button primary" href="${hrefFor({page:'tourism'})}" data-route="page=tourism">観光スポット一覧</a>
           <a class="top-button secondary" href="${hrefFor({page:'food'})}" data-route="page=food">食事スポット一覧</a>
         </nav>
+
+        <section class="top-dashboard" aria-label="旅行サポート">
+          <a class="emergency-card" href="${esc(EMERGENCY_REGISTER_URL)}" target="_blank" rel="noopener">
+            <span class="emergency-kicker">TRIP SAFETY</span>
+            <strong>緊急連絡先登録</strong>
+            <span class="emergency-copy">旅行中に必要な連絡先・対応情報を登録</span>
+            <small>※登録内容を閲覧できるのは 12/4〜12/6 のみです</small>
+          </a>
+
+          <div class="next-plan-card">
+            <div class="next-plan-head">
+              <span class="next-plan-label">次の予定</span>
+              <span class="next-plan-temp">暫定</span>
+            </div>
+            <div class="next-plan-title">${esc(TOP_NEXT_PLAN.title)}</div>
+
+            <div class="next-plan-times">
+              <div><span>移動開始</span><b id="nextMoveAt">${esc(formatPlanTime(TOP_NEXT_PLAN.moveAt))}</b></div>
+              <div><span>予定開始</span><b id="nextStartAt">${esc(formatPlanTime(TOP_NEXT_PLAN.startAt))}</b></div>
+            </div>
+
+            <div class="countdown-grid">
+              <div class="countdown-box"><span>移動開始まで</span><strong id="moveCountdown">${esc(minutesUntil(TOP_NEXT_PLAN.moveAt))}</strong></div>
+              <div class="countdown-box"><span>予定開始まで</span><strong id="startCountdown">${esc(minutesUntil(TOP_NEXT_PLAN.startAt))}</strong></div>
+            </div>
+
+            <div class="top-current-time">現在 <span id="topNowClock">--:--</span></div>
+
+            <div class="next-map-row">
+              ${nextApple
+                ? `<a href="${esc(nextApple)}" target="_blank" rel="noopener">Appleマップ</a>`
+                : `<span class="disabled">Appleマップ</span>`}
+              ${nextGoogle
+                ? `<a href="${esc(nextGoogle)}" target="_blank" rel="noopener">Google Maps</a>`
+                : `<span class="disabled">Google Maps</span>`}
+            </div>
+          </div>
+        </section>
       </main>`;
 
     const img = document.getElementById('topImage');
@@ -66,6 +139,26 @@
         document.getElementById('topImageError').hidden = false;
       }
     });
+
+    const updateTopClock = () => {
+      const nowEl = document.getElementById('topNowClock');
+      if (!nowEl) {
+        if (topClockTimer) clearInterval(topClockTimer);
+        topClockTimer = null;
+        return;
+      }
+      nowEl.textContent = new Intl.DateTimeFormat('ja-JP', {
+        hour:'2-digit', minute:'2-digit', hour12:false, timeZone:'Asia/Tokyo'
+      }).format(new Date());
+      const moveEl = document.getElementById('moveCountdown');
+      const startEl = document.getElementById('startCountdown');
+      if (moveEl) moveEl.textContent = minutesUntil(TOP_NEXT_PLAN.moveAt);
+      if (startEl) startEl.textContent = minutesUntil(TOP_NEXT_PLAN.startAt);
+    };
+
+    updateTopClock();
+    if (topClockTimer) clearInterval(topClockTimer);
+    topClockTimer = setInterval(updateTopClock, 30000);
     bindInternalLinks();
   }
 

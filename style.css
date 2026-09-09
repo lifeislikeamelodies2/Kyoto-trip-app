@@ -1,0 +1,88 @@
+:root{
+  --bg:#f5f1e8;
+  --paper:#fffdf8;
+  --ink:#1f1e1b;
+  --muted:#716b61;
+  --line:#ddd4c5;
+  --accent:#393126;
+  --soft:#eee7da;
+}
+*{box-sizing:border-box}
+html{min-height:100%;background:var(--bg)}
+body{
+  margin:0;
+  min-height:100%;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
+  line-height:1.75;
+}
+a{-webkit-tap-highlight-color:transparent}
+button{font:inherit}
+.wrap{max-width:720px;margin:0 auto;padding:24px 16px 48px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:22px;box-shadow:0 8px 28px rgba(40,32,20,.06)}
+.eyebrow{font-size:12px;letter-spacing:.12em;color:var(--muted);font-weight:700}
+h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:30px;line-height:1.35;margin:7px 0 4px}
+.address{font-size:13px;color:var(--muted);margin-bottom:20px}
+.maps{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0 22px}
+.btn{display:block;text-align:center;text-decoration:none;padding:14px 10px;border-radius:14px;font-weight:800;border:1px solid var(--accent)}
+.apple{background:var(--paper);color:var(--accent)}
+.google{background:var(--accent);color:white}
+.section{border-top:1px solid var(--line);padding-top:18px;margin-top:18px}
+.label{font-size:12px;letter-spacing:.08em;color:var(--muted);font-weight:800;margin-bottom:5px}
+.hours{font-size:18px;font-weight:800}
+.note{white-space:pre-wrap}
+.source{font-size:12px;margin-top:18px;color:var(--muted)}
+.source a{color:inherit}
+.back{display:inline-block;margin-top:18px;color:var(--muted);text-decoration:none}
+.grid{display:grid;gap:12px}
+.place-link{display:block;background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:15px 17px;color:var(--ink);text-decoration:none}
+.place-link small{display:block;color:var(--muted)}
+.meta-row{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 14px}
+.tag,.day-badge{display:inline-block;font-size:11px;font-weight:700;padding:4px 8px;border-radius:999px;background:var(--soft);color:var(--muted)}
+.filters{display:grid;gap:14px;margin:18px 0 20px;padding:14px;background:#f9f6ef;border:1px solid var(--line);border-radius:16px}
+.filter-title{font-size:12px;font-weight:800;color:var(--muted);margin-bottom:7px}
+.filter-row{display:flex;gap:7px;flex-wrap:wrap}
+.filter-btn{appearance:none;border:1px solid var(--line);background:var(--paper);color:var(--ink);padding:8px 11px;border-radius:999px;font-weight:700;font-size:13px;cursor:pointer}
+.filter-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.empty{display:none;padding:22px;text-align:center;color:var(--muted)}
+.page-nav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}
+.page-nav a{color:var(--muted);text-decoration:none;font-size:13px;font-weight:700}
+
+/* TOP: 横幅を端末に合わせ、画像本来の比率で高さを決める */
+.top-page{overflow-x:hidden}
+.top-shell{
+  width:100%;
+  max-width:720px;
+  margin:0 auto;
+  padding:12px 16px max(20px, env(safe-area-inset-bottom));
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+.top-art{
+  width:100%;
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:20px;
+  overflow:hidden;
+  box-shadow:0 8px 28px rgba(40,32,20,.06);
+}
+.top-art img{
+  display:block;
+  width:100%;
+  height:auto;
+}
+.top-image-error{padding:24px;text-align:center;color:var(--muted);font-size:13px}
+.top-actions{width:100%;display:grid;gap:10px}
+.top-button{display:flex;align-items:center;justify-content:center;min-height:58px;padding:13px 16px;border-radius:16px;text-decoration:none;font-weight:800;font-size:17px;border:1px solid var(--accent)}
+.top-button.primary{background:var(--accent);color:#fff}
+.top-button.secondary{background:var(--paper);color:var(--accent)}
+.coming-soon{padding:30px 16px;text-align:center;color:var(--muted)}
+.coming-soon strong{display:block;color:var(--ink);font-size:20px;margin-bottom:8px}
+
+@media(max-width:480px){
+  h1{font-size:26px}
+  .maps{grid-template-columns:1fr}
+  .top-shell{padding-left:12px;padding-right:12px}
+}

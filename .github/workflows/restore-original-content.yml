@@ -1,0 +1,189 @@
+name: Restore creative content and original spot layout
+
+on:
+  push:
+    paths:
+      - '.github/workflows/restore-original-content.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Restore creative spots, tags, photos and old maps
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json, re
+
+          # ---------- data.js ----------
+          data_path = Path('data.js')
+          text = data_path.read_text(encoding='utf-8')
+          m = re.search(r'const SPOTS = (\[.*\]);\s*$', text, re.S)
+          if not m:
+              raise SystemExit('SPOTS array not found')
+          spots = json.loads(m.group(1))
+
+          # 元サイトの創作4地点を復元。
+          creative_spots = [
+            {
+              'id':'pontocho','name':'先斗町・祇園界隈','address':'京都府京都市中京区先斗町通周辺（三条〜四条）','category':'長州・花街・創作',
+              'hours':'街路は終日散策可。飲食店・お茶屋等の営業時間は各店舗による。',
+              'note':'鴨川の西岸、三条から四条へ細長く延びる先斗町は、現在も京都五花街の一つとして知られる花街であり、川を渡れば祇園、少し北へ歩けば河原町御池にあった長州藩邸へと至る。幕末のこの界隈では、灯りと酒と芸事に彩られた夜のすぐそばに、尊王攘夷をめぐる政治と剣呑な気配が息づいていた。\n\n【創作設定】長州出身の久木藤雨は、桂小五郎の保護を受けながら持ち前の商才を生かし、この先斗町界隈に店を構えていた。青年と見紛うほど凛々しく美しい容貌と、人の懐へ自然に入り込む才覚を併せ持つ藤雨は、色街の女性たちからは時に疑似恋愛めいた憧れを寄せられ、男性客からもまた不思議と好かれる、花街では少し風変わりな人気者だった。しかし、誰に笑いかけても、その視線が本当に探していたのは久坂玄瑞である。北へ行けば長州藩邸があり、鴨川の向こうには祇園があるこの場所は、藤雨にとって商いの拠点であると同時に、いつ現れるとも知れない久坂の足音を待つ場所でもあった。',
+              'source':'https://www.kamogawa-odori.com/pontocho/','tags':['長州','花街','創作','藤雨'],'days':[],'checkedAt':'2026-08-22','image':'assets/spots/pontocho.webp'
+            },
+            {
+              'id':'shimabara','name':'島原（花街・角屋）','address':'京都府京都市下京区西新屋敷揚屋町周辺','category':'新選組・長州・花街・創作',
+              'hours':'島原の街路は終日散策可。角屋もてなしの文化美術館は10:00〜16:00（受付終了15:30）を基本とし、休館日・季節休館あり。',
+              'note':'寛永18年（1641）に現在地へ移された島原は、遊宴だけでなく和歌・俳諧などの文化も育んだ京都有数の花街であり、その中心的な揚屋だった角屋は現在も往時の姿を伝えている。幕末には久坂玄瑞ら勤王志士がここを訪れ、遊興を装いながら密議を重ねた一方、新選組の隊士たちも足繁く出入りした。芹沢鴨が酒席で乱暴を働いたという逸話も残り、彼が最期を迎えた夜も、角屋での宴会を終えて壬生の八木邸へ戻った後のことだったと伝えられている。\n\n【創作設定】藤雨にとって島原は、先斗町に次ぐ「第二の拠点」である。桂に商売のやり方や危うい交友関係を叱られ、先斗町に少々居づらくなるたび、殊勝に反省するのではなく「ならば河岸を変えればよい」とばかりに島原へ姿を移すのが彼女らしい。しかも角屋は久坂玄瑞にも縁の深い場所であるため、本人が偶然を装っていたとしても、その選択が本当に偶然だったのかは怪しい。先斗町では店主として人を迎え、島原では少しだけ長州の女へ戻る――藤雨にとって二つの花街は、それぞれ異なる顔で生きるための二つの居場所だった。',
+              'source':'https://www.kyoto-kankou.or.jp/info_search/3725','tags':['新選組','長州','花街','創作','藤雨'],'days':[],'checkedAt':'2026-08-22','image':'assets/spots/shimabara.jpg'
+            },
+            {
+              'id':'fujii-home','name':'藤井家候補地（新町通丸太町下る）','address':'京都府京都市中京区大炊町・新町通丸太町下る周辺','category':'創作・由起緒',
+              'hours':'一般の市街地のため終日通行可。住宅地を含むため、周囲の生活環境に配慮して散策。',
+              'note':'【創作設定】藤井由起緒の生家を想定する候補地。新町通を丸太町から南へ下ったこの一帯は、京都御所の南西側に位置すると同時に二条城の東側へも出やすく、父が上級武士として城へ出仕したり、幕府に関わる用向きで頻繁に往来したりする暮らしを考えるうえで都合がよい。\n\n由起緒が育った藤井家は、単に裕福な屋敷というだけではなく、父の立場と家格が家の造りや日々の振る舞いにまで染み込んだ家だったと考えられる。門を出れば父が向かう二条城の方角があり、家の中では武家の娘として求められる作法と静けさがある。由起緒にとってこの場所は、守られていた少女時代の記憶と、藤井家の娘として背負わされていた重さの両方が残る場所であり、その後すべてを失った彼女にとっては、容易には振り返ることのできない「かつて家だった場所」となる。\n\n※藤井家および由起緒は創作上の人物・設定であり、この地点に実在した武家屋敷を示すものではない。',
+              'source':'https://nijo-jocastle.city.kyoto.lg.jp/','tags':['創作','由起緒','藤井家'],'days':[],'checkedAt':'2026-08-22'
+            },
+            {
+              'id':'saeki-home','name':'佐伯・由起緒 借家候補地（壬生）','address':'京都府京都市中京区壬生賀陽御所町〜壬生坊城町周辺','category':'新選組・創作',
+              'hours':'一般の住宅地のため終日通行可。実在する個人宅等を史跡として扱わず、周辺住民に配慮して散策。',
+              'note':'【創作設定】佐伯又三郎と由起緒が結婚した後、屯所とは別に二人だけで暮らすため借りた家をこの一帯に想定する。壬生賀陽御所町から壬生坊城町の東寄り、現在の四条大宮から少し西へ入った四条通南側、綾小路通との間に置けば、壬生の屯所まで徒歩5〜10分ほどで往来できる設定にしやすい。佐伯は朝になれば何事もなかったように屯所へ出ていき、夜になれば仕事や遊びを終えてふらりと帰ってくることができる。\n\nただし、この家は最初から「夫婦の新居」として大切に選ばれたわけではない。由起緒への感情がまだ浅かった頃の佐伯にとっては、せいぜい「屯所に置いておくわけにもいかない女を、とりあえず住まわせるために借りた家」であり、立地も家財も、必要最低限であればそれでよかったはずである。ところが、由起緒の使う茶碗が置かれ、髪を結う道具が増え、季節に合わせて寝具が変わり、佐伯自身もいつしか夜になるとそこへ帰ることを当然と思うようになる。投げやりに借りたはずの一軒の借家が、二人の暮らしの痕跡を少しずつ蓄え、佐伯が意図しないまま「帰る家」へ変わっていく――その変化まで含めて、この場所を二人の生活の候補地とする。\n\n※佐伯又三郎・由起緒および借家は創作上の設定であり、この地点に実在した住居を示すものではない。',
+              'source':'https://www.kyokanko.or.jp/news/20230601_1/','tags':['新選組','創作','佐伯','由起緒','壬生'],'days':[],'checkedAt':'2026-08-22'
+            }
+          ]
+
+          creative_ids = {s['id'] for s in creative_spots}
+          matsubaya = next((s for s in spots if s.get('id') == 'matsubaya'), None)
+          base_spots = [s for s in spots if s.get('id') not in creative_ids and s.get('id') != 'matsubaya']
+          if matsubaya:
+              matsubaya['image'] = 'assets/spots/matsubaya.jpg'
+
+          oldmaps = {
+            'ryozen': ('assets/oldmaps/ryozen.png','霊山・東山山麓周辺'),
+            'mibu': ('assets/oldmaps/mibu.png','壬生寺・壬生村周辺'),
+            'nishi': ('assets/oldmaps/nishi.png','西本願寺周辺'),
+            'kitano': ('assets/oldmaps/kitano.png','北野天満宮周辺'),
+            'higashi': ('assets/oldmaps/higashi.png','東本願寺周辺'),
+            'ikedaya': ('assets/oldmaps/ikedaya.png','三条・木屋町・池田屋周辺'),
+            'kurodani': ('assets/oldmaps/kurodani.png','黒谷・金戒光明寺周辺'),
+            'hamaguri': ('assets/oldmaps/hamaguri.png','京都御所西側・蛤御門周辺'),
+            'choshu': ('assets/oldmaps/choshu.png','長州藩邸・河原町御池周辺'),
+            'katsura': ('assets/oldmaps/katsura.png','桂小五郎ゆかりの長州藩邸周辺'),
+            'takatsukasa': ('assets/oldmaps/takatsukasa.png','京都御所南側・鷹司邸跡周辺'),
+            'suzaku': ('assets/oldmaps/suzaku.png','千本通・朱雀門跡周辺'),
+            'pontocho': ('assets/oldmaps/pontocho.png','先斗町・祇園界隈'),
+            'shimabara': ('assets/oldmaps/shimabara.png','島原・角屋周辺'),
+            'fujii-home': ('assets/oldmaps/fujii-home.png','新町通丸太町下る・藤井家候補地周辺'),
+            'saeki-home': ('assets/oldmaps/saeki-home.png','壬生東部・佐伯と由起緒の借家候補地周辺'),
+          }
+
+          final_spots = base_spots + creative_spots + ([matsubaya] if matsubaya else [])
+          for s in final_spots:
+              if s.get('id') in oldmaps:
+                  s['oldMap'], s['oldMapArea'] = oldmaps[s['id']]
+
+          # 幕末期周辺図の出典定数を追加。
+          prefix = text[:m.start()]
+          prefix = re.sub(r"\nconst OLD_MAP_SOURCE_URL = .*?;\nconst OLD_MAP_SOURCE_NAME = .*?;\n", "\n", prefix, flags=re.S)
+          constants = (
+            "const OLD_MAP_SOURCE_URL = 'https://lapis.nichibun.ac.jp/chizu/map_detail.php?id=001422633';\n"
+            "const OLD_MAP_SOURCE_NAME = '国際日本文化研究センター所蔵「京都古地図」（元治元年・1864年）';\n"
+          )
+          insert_at = prefix.find('const FOOD_SPOTS')
+          if insert_at < 0:
+              raise SystemExit('FOOD_SPOTS not found')
+          prefix = prefix[:insert_at] + constants + prefix[insert_at:]
+          new_json = json.dumps(final_spots, ensure_ascii=False, separators=(',', ':'))
+          data_path.write_text(prefix + 'const SPOTS = ' + new_json + ';\n', encoding='utf-8')
+
+          # ---------- app.js ----------
+          app_path = Path('app.js')
+          app = app_path.read_text(encoding='utf-8')
+
+          app = app.replace(
+            "const tags = (spot.tags || []).map(t => `<span class=\"tag\">${esc(t)}</span>`).join('');",
+            "const tags = (spot.tags || []).map(t => `<span class=\"tag${t === '創作' ? ' creative' : ''}\">${esc(t)}</span>`).join('');"
+          )
+
+          # 一覧の創作地点を特別枠にする。
+          if "const creative = tags.includes('創作');" not in app:
+              marker = "      const tags = s.tags || [];\n      const days = (s.days && s.days.length) ? s.days : ['未定'];\n"
+              app = app.replace(marker, marker + "      const creative = tags.includes('創作');\n", 1)
+          app = app.replace(
+            '<a class="place-link spot-card" href="${hrefFor({spot:s.id})}"',
+            '<a class="place-link spot-card${creative ? \' creative-card\' : \'\'}" href="${hrefFor({spot:s.id})}"',
+            1
+          )
+
+          # 詳細ページに幕末期周辺図を復元。
+          if 'const oldMap = spot.oldMap' not in app:
+              marker = "    const photo = spot.image\n      ? `<figure class=\"spot-photo\"><img src=\"${esc(spot.image)}\" alt=\"${esc(spot.name)}の画像\" loading=\"eager\"></figure>`\n      : '';\n"
+              addition = marker + "    const oldMap = spot.oldMap\n      ? `<section class=\"section old-map-section\"><div class=\"label\">幕末期周辺図</div><img class=\"old-map-image\" src=\"${esc(spot.oldMap)}\" alt=\"${esc((spot.oldMapArea || spot.name) + 'の幕末期周辺図')}\" loading=\"lazy\"><div class=\"old-map-area\">${esc(spot.oldMapArea || '')}</div><div class=\"old-map-desc\">元治元年（1864年）頃の位置関係をもとにした復元イメージです。</div><div class=\"old-map-credit\">参考：<a href=\"${esc(OLD_MAP_SOURCE_URL)}\" target=\"_blank\" rel=\"noopener\">${esc(OLD_MAP_SOURCE_NAME)}</a></div></section>`\n      : '';\n"
+              if marker not in app:
+                  raise SystemExit('photo marker not found in app.js')
+              app = app.replace(marker, addition, 1)
+
+          if '${oldMap}' not in app:
+              marker = '        </div>\n        <section class="section"><div class="label">営業時間・参拝可能時間</div>'
+              app = app.replace(marker, '        </div>\n        ${oldMap}\n        <section class="section"><div class="label">営業時間・参拝可能時間</div>', 1)
+
+          app = app.replace(
+            "情報確認：${esc(UPDATED_AT)}　<a href=\"${esc(spot.source)}\"",
+            "情報確認：${esc(spot.checkedAt || UPDATED_AT)}　<a href=\"${esc(spot.source)}\""
+          )
+          app_path.write_text(app, encoding='utf-8')
+
+          # ---------- style.css ----------
+          css_path = Path('style.css')
+          css = css_path.read_text(encoding='utf-8')
+          if '--creative:' not in css:
+              css = css.replace('  --soft:#eee7da;\n', '  --soft:#eee7da;\n  --creative:#76556f;\n  --creativeSoft:#f2e9ef;\n', 1)
+          if '.tag.creative{' not in css:
+              css = css.replace(
+                '.tag,.day-badge{display:inline-block;font-size:11px;font-weight:700;padding:4px 8px;border-radius:999px;background:var(--soft);color:var(--muted)}\n',
+                '.tag,.day-badge{display:inline-block;font-size:11px;font-weight:700;padding:4px 8px;border-radius:999px;background:var(--soft);color:var(--muted)}\n.tag.creative{background:var(--creativeSoft);border:1px solid #d8c5d3;color:var(--creative)}\n',
+                1
+              )
+          if '.creative-card{' not in css:
+              css = css.replace('.place-link small{display:block;color:var(--muted)}\n', '.place-link small{display:block;color:var(--muted)}\n.creative-card{border-color:#d8c5d3;background:#fffafd}\n', 1)
+
+          # 観光写真は元サイト同様16:9で表示。
+          css = css.replace(
+            '.spot-photo img{display:block;width:100%;height:auto}\n',
+            '.spot-photo img{display:block;width:100%;aspect-ratio:16/9;height:auto;object-fit:cover}\n',
+            1
+          )
+
+          if '.old-map-image{' not in css:
+              oldmap_css = (
+                '.old-map-image{display:block;width:100%;height:auto;object-fit:contain;border-radius:14px;border:1px solid var(--line);background:#eee8dc}\n'
+                '.old-map-area{font-size:13px;font-weight:800;margin-top:8px}\n'
+                '.old-map-desc,.old-map-credit{font-size:12px;color:var(--muted);margin-top:4px}\n'
+                '.old-map-credit a{color:inherit}\n'
+              )
+              css = css.replace('.maps{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0 22px}\n', oldmap_css + '.maps{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0 22px}\n', 1)
+          css_path.write_text(css, encoding='utf-8')
+          PY
+
+      - name: Validate JavaScript
+        run: |
+          node --check data.js
+          node --check app.js
+
+      - name: Commit restored content
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data.js app.js style.css
+          if git diff --cached --quiet; then
+            echo 'No changes to commit.'
+          else
+            git commit -m 'Restore creative spots, tags and old maps'
+            git push
+          fi

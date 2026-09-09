@@ -8,7 +8,7 @@
     .replace(/"/g,'&quot;')
     .replace(/'/g,'&#39;');
 
-  const mapQuery = (spot) => encodeURIComponent(`${spot.name} ${spot.address}`);
+  const mapQuery = (spot) => encodeURIComponent(spot.mapQuery || `${spot.name} ${spot.address}`);
   const appleMapUrl = (spot) => `https://maps.apple.com/?q=${mapQuery(spot)}`;
   const googleMapUrl = (spot) => `https://www.google.com/maps/search/?api=1&query=${mapQuery(spot)}`;
 
@@ -94,7 +94,7 @@
       const tags = s.tags || [];
       const days = (s.days && s.days.length) ? s.days : ['未定'];
       const creative = tags.includes('創作');
-      const badges = tags.map(t => `<span class="tag">${esc(t)}</span>`).join('') +
+      const badges = tags.map(t => `<span class="tag${t === '創作' ? ' creative' : ''}">${esc(t)}</span>`).join('') +
         days.map(d => `<span class="day-badge">${esc(d)}</span>`).join('');
       return `<a class="place-link spot-card${creative ? ' creative-card' : ''}" href="${hrefFor({spot:s.id})}" data-route="spot=${encodeURIComponent(s.id)}" data-tags="${esc(tags.join('|'))}" data-days="${esc(days.join('|'))}">
         <b>${esc(s.name)}</b><small>${esc(s.category)}</small><span class="meta-row">${badges}</span>
@@ -177,23 +177,62 @@
   function renderFood() {
     document.title = '食事スポット一覧｜京都旅行';
     document.body.className = '';
-    if (!FOOD_SPOTS.length) {
-      app.innerHTML = `
-        <main class="wrap"><div class="card">
-          <div class="page-nav"><a href="${hrefFor()}" data-route="">← TOP</a></div>
-          <div class="eyebrow">KYOTO TRIP</div>
-          <h1>食事スポット一覧</h1>
-          <div class="coming-soon"><strong>現在準備中です</strong>食事スポットが決まり次第、こちらに追加します。</div>
-        </div></main>`;
-    } else {
-      app.innerHTML = `
-        <main class="wrap"><div class="card">
-          <div class="page-nav"><a href="${hrefFor()}" data-route="">← TOP</a></div>
-          <div class="eyebrow">KYOTO TRIP</div>
-          <h1>食事スポット一覧</h1>
-          <div class="grid">${FOOD_SPOTS.map(s => `<div class="place-link"><b>${esc(s.name || '')}</b></div>`).join('')}</div>
-        </div></main>`;
-    }
+
+    const links = FOOD_SPOTS.map(s => {
+      const tags = s.tags || [];
+      const days = (s.days && s.days.length) ? s.days : [];
+      const badges = tags.map(t => `<span class="tag">${esc(t)}</span>`).join('') +
+        days.map(d => `<span class="day-badge">${esc(d)}</span>`).join('');
+      const reservation = s.reservation
+        ? `<div class="reservation-summary">予約：${esc(s.reservation)}</div>`
+        : '';
+      return `<a class="place-link food-card" href="${hrefFor({food:s.id})}" data-route="food=${encodeURIComponent(s.id)}">
+        <b>${esc(s.name)}</b><small>${esc(s.category)}</small><span class="meta-row">${badges}</span>${reservation}
+      </a>`;
+    }).join('');
+
+    app.innerHTML = `
+      <main class="wrap"><div class="card">
+        <div class="page-nav"><a href="${hrefFor()}" data-route="">← TOP</a></div>
+        <div class="eyebrow">KYOTO TRIP</div>
+        <h1>食事スポット一覧</h1>
+        ${FOOD_SPOTS.length
+          ? `<div class="grid">${links}</div>`
+          : `<div class="coming-soon"><strong>現在準備中です</strong>食事スポットが決まり次第、こちらに追加します。</div>`}
+      </div></main>`;
+    bindInternalLinks();
+  }
+
+  function renderFoodSpot(spot) {
+    document.title = `${spot.name}｜京都旅行`;
+    document.body.className = '';
+    const tags = (spot.tags || []).map(t => `<span class="tag">${esc(t)}</span>`).join('');
+    const dayText = (spot.days && spot.days.length) ? spot.days.join('・') : '';
+    const dayBadge = dayText ? `<span class="day-badge">${esc(dayText)}</span>` : '';
+    const photo = spot.image
+      ? `<figure class="spot-photo"><img src="${esc(spot.image)}" alt="${esc(spot.name)}の画像" loading="eager"></figure>`
+      : '';
+    const reservation = spot.reservation
+      ? `<section class="section reservation-box"><div class="label">予約</div><div class="hours">${esc(spot.reservation)}</div></section>`
+      : '';
+
+    app.innerHTML = `
+      <main class="wrap"><article class="card">
+        <div class="eyebrow">${esc(spot.category)} ｜ KYOTO TRIP</div>
+        <h1>${esc(spot.name)}</h1>
+        <div class="address">${esc(spot.address)}</div>
+        <div class="meta-row">${tags}${dayBadge}</div>
+        ${photo}
+        <div class="maps">
+          <a class="btn apple" href="${esc(appleMapUrl(spot))}" target="_blank" rel="noopener">Appleマップで開く</a>
+          <a class="btn google" href="${esc(googleMapUrl(spot))}" target="_blank" rel="noopener">Google Mapsで開く</a>
+        </div>
+        ${reservation}
+        <section class="section"><div class="label">営業時間</div><div class="hours">${esc(spot.hours)}</div></section>
+        <section class="section"><div class="label">備考</div><div class="note">${esc(spot.note)}</div></section>
+        <div class="source">情報確認：${esc(spot.checkedAt || UPDATED_AT)}　<a href="${esc(spot.source)}" target="_blank" rel="noopener">公式・参考情報</a></div>
+        <a class="back" href="${hrefFor({page:'food'})}" data-route="page=food">← 食事スポット一覧へ</a>
+      </article></main>`;
     bindInternalLinks();
   }
 
@@ -203,6 +242,11 @@
     if (spotId) {
       const spot = SPOTS.find(s => s.id === spotId);
       if (spot) return renderSpot(spot);
+    }
+    const foodId = p.get('food');
+    if (foodId) {
+      const food = FOOD_SPOTS.find(s => s.id === foodId);
+      if (food) return renderFoodSpot(food);
     }
     if (p.get('page') === 'tourism') return renderTourism();
     if (p.get('page') === 'food') return renderFood();

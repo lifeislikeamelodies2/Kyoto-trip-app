@@ -1,0 +1,138 @@
+from pathlib import Path
+
+app_path = Path('app.js')
+app = app_path.read_text(encoding='utf-8')
+
+old_emergency = '''          <a class="emergency-card" href="${esc(EMERGENCY_REGISTER_URL)}" target="_blank" rel="noopener">
+            <span class="emergency-kicker">TRIP SAFETY</span>
+            <strong>緊急連絡先登録</strong>
+            <span class="emergency-copy">旅行中に必要な連絡先・対応情報を登録</span>
+            <small>※登録内容を閲覧できるのは 12/4〜12/6 のみです</small>
+          </a>'''
+new_emergency = '''          <a class="emergency-card" href="${esc(EMERGENCY_REGISTER_URL)}" target="_blank" rel="noopener">
+            <span class="emergency-kicker">TRIP SAFETY</span>
+            <strong>緊急連絡先</strong>
+            <span class="emergency-action">登録内容確認画面</span>
+            <small>※登録内容を閲覧できるのは 12/4〜12/6 のみです</small>
+          </a>'''
+if old_emergency not in app:
+    raise SystemExit('Emergency block not found')
+app = app.replace(old_emergency, new_emergency, 1)
+
+old_plan = '''          <div class="next-plan-card">
+            <div class="next-plan-head">
+              <span class="next-plan-label">次の予定</span>
+              <span class="next-plan-temp">暫定</span>
+            </div>
+            <div class="next-plan-title">${esc(TOP_NEXT_PLAN.title)}</div>
+
+            <div class="next-plan-times">
+              <div><span>移動開始</span><b id="nextMoveAt">${esc(formatPlanTime(TOP_NEXT_PLAN.moveAt))}</b></div>
+              <div><span>予定開始</span><b id="nextStartAt">${esc(formatPlanTime(TOP_NEXT_PLAN.startAt))}</b></div>
+            </div>
+
+            <div class="countdown-grid">
+              <div class="countdown-box"><span>移動開始まで</span><strong id="moveCountdown">${esc(minutesUntil(TOP_NEXT_PLAN.moveAt))}</strong></div>
+              <div class="countdown-box"><span>予定開始まで</span><strong id="startCountdown">${esc(minutesUntil(TOP_NEXT_PLAN.startAt))}</strong></div>
+            </div>
+
+            <div class="top-current-time">現在 <span id="topNowClock">--:--</span></div>
+
+            <div class="next-map-row">
+              ${nextApple
+                ? `<a href="${esc(nextApple)}" target="_blank" rel="noopener">Appleマップ</a>`
+                : `<span class="disabled">Appleマップ</span>`}
+              ${nextGoogle
+                ? `<a href="${esc(nextGoogle)}" target="_blank" rel="noopener">Google Maps</a>`
+                : `<span class="disabled">Google Maps</span>`}
+            </div>
+          </div>'''
+new_plan = '''          <div class="next-plan-card">
+            <div class="next-plan-head">
+              <span class="next-plan-label">次の行先</span>
+              <span class="next-plan-temp">暫定</span>
+            </div>
+            <div class="next-plan-title">${esc(TOP_NEXT_PLAN.title)}</div>
+
+            <div class="plan-compact-grid">
+              <div class="plan-compact-row">
+                <span class="plan-key">移動時間</span>
+                <b id="nextMoveAt">${esc(formatPlanTime(TOP_NEXT_PLAN.moveAt))}</b>
+                <span class="plan-count-label">移動時間まで</span>
+                <strong id="moveCountdown">${esc(minutesUntil(TOP_NEXT_PLAN.moveAt))}</strong>
+              </div>
+              <div class="plan-compact-row">
+                <span class="plan-key">予定開始</span>
+                <b id="nextStartAt">${esc(formatPlanTime(TOP_NEXT_PLAN.startAt))}</b>
+                <span class="plan-count-label">予定開始まで</span>
+                <strong id="startCountdown">${esc(minutesUntil(TOP_NEXT_PLAN.startAt))}</strong>
+              </div>
+            </div>
+
+            <span id="topNowClock" hidden>--:--</span>
+            <div class="next-map-row">
+              ${nextApple
+                ? `<a href="${esc(nextApple)}" target="_blank" rel="noopener">Map</a>`
+                : `<span class="disabled">Map</span>`}
+              ${nextGoogle
+                ? `<a href="${esc(nextGoogle)}" target="_blank" rel="noopener">Google Map</a>`
+                : `<span class="disabled">Google Map</span>`}
+            </div>
+          </div>'''
+if old_plan not in app:
+    raise SystemExit('Plan block not found')
+app = app.replace(old_plan, new_plan, 1)
+app_path.write_text(app, encoding='utf-8')
+
+css_path = Path('style.css')
+css = css_path.read_text(encoding='utf-8')
+marker = '/* TOP COMPACT DASHBOARD 2026-09-10 */'
+if marker not in css:
+    css += r'''
+
+/* TOP COMPACT DASHBOARD 2026-09-10 */
+.top-page{min-height:100dvh}
+.top-shell{gap:8px;padding-top:8px}
+.top-art{display:flex;align-items:center;justify-content:center}
+.top-art img{width:100%;height:clamp(180px,32dvh,270px);object-fit:contain}
+.top-actions{gap:7px}
+.top-button{min-height:46px;padding:8px 14px;border-radius:14px;font-size:16px}
+.top-dashboard{grid-template-columns:minmax(0,.42fr) minmax(0,.58fr);gap:8px;align-items:stretch}
+.emergency-card,.next-plan-card{border-radius:14px;min-height:0}
+.emergency-card{padding:11px 12px;min-height:142px;border-width:1.5px;justify-content:center}
+.emergency-kicker{font-size:8px;margin-bottom:2px;letter-spacing:.1em}
+.emergency-card strong{font-size:19px;line-height:1.2;margin-bottom:5px}
+.emergency-action{font-size:12px;line-height:1.35;font-weight:800;color:var(--accent);padding-top:5px;border-top:1px solid var(--line)}
+.emergency-card small{font-size:8px;line-height:1.35;margin-top:7px}
+.next-plan-card{padding:9px 10px;gap:5px}
+.next-plan-label{font-size:17px;line-height:1.2}
+.next-plan-temp{font-size:8px;padding:2px 5px}
+.next-plan-title{font-size:11px;line-height:1.3;padding:5px 7px;border-radius:7px}
+.plan-compact-grid{display:grid;gap:4px}
+.plan-compact-row{display:grid;grid-template-columns:42px 41px minmax(0,1fr) 44px;gap:3px;align-items:center;min-height:27px;padding:4px 5px;border:1px solid var(--line);border-radius:8px;background:#fff}
+.plan-key,.plan-count-label{font-size:8px;line-height:1.15;color:var(--muted);font-weight:800}
+.plan-compact-row b{font-size:12px;line-height:1;white-space:nowrap}
+.plan-compact-row strong{font-size:11px;line-height:1;text-align:right;white-space:nowrap}
+.next-map-row{gap:5px;margin-top:1px}
+.next-map-row a,.next-map-row span{padding:5px 3px;border-radius:7px;font-size:9px;line-height:1.2}
+@media(max-width:620px){
+  .top-dashboard{grid-template-columns:minmax(0,.42fr) minmax(0,.58fr)}
+  .emergency-card{min-height:136px;padding:10px}
+  .emergency-card strong{font-size:17px}
+  .next-plan-card{padding:8px}
+}
+@media(max-width:380px){
+  .top-shell{padding-left:9px;padding-right:9px}
+  .top-art img{height:clamp(165px,29dvh,235px)}
+  .top-button{min-height:43px;font-size:15px}
+  .top-dashboard{grid-template-columns:minmax(0,.40fr) minmax(0,.60fr);gap:6px}
+  .emergency-card strong{font-size:15px}
+  .emergency-action{font-size:10px}
+  .emergency-card small{font-size:7px}
+  .next-plan-label{font-size:15px}
+  .plan-compact-row{grid-template-columns:38px 38px minmax(0,1fr) 40px;padding:3px;gap:2px}
+  .plan-key,.plan-count-label{font-size:7px}
+  .plan-compact-row b,.plan-compact-row strong{font-size:10px}
+}
+'''
+css_path.write_text(css, encoding='utf-8')

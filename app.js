@@ -147,12 +147,16 @@
     document.body.className = '';
     const tags = (spot.tags || []).map(t => `<span class="tag">${esc(t)}</span>`).join('');
     const dayText = (spot.days && spot.days.length) ? spot.days.join('・') : '日程未定';
+    const photo = spot.image
+      ? `<figure class="spot-photo"><img src="${esc(spot.image)}" alt="${esc(spot.name)}の画像" loading="eager"></figure>`
+      : '';
     app.innerHTML = `
       <main class="wrap"><article class="card">
         <div class="eyebrow">${esc(spot.category)} ｜ KYOTO TRIP</div>
         <h1>${esc(spot.name)}</h1>
         <div class="address">${esc(spot.address)}</div>
         <div class="meta-row">${tags}<span class="day-badge">${esc(dayText)}</span></div>
+        ${photo}
         <div class="maps">
           <a class="btn apple" href="${esc(appleMapUrl(spot))}" target="_blank" rel="noopener">Appleマップで開く</a>
           <a class="btn google" href="${esc(googleMapUrl(spot))}" target="_blank" rel="noopener">Google Mapsで開く</a>

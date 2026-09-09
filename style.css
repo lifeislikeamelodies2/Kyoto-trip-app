@@ -24,6 +24,8 @@ button{font:inherit}
 .eyebrow{font-size:12px;letter-spacing:.12em;color:var(--muted);font-weight:700}
 h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:30px;line-height:1.35;margin:7px 0 4px}
 .address{font-size:13px;color:var(--muted);margin-bottom:20px}
+.spot-photo{margin:18px 0 8px;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#f9f6ef}
+.spot-photo img{display:block;width:100%;height:auto}
 .maps{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0 22px}
 .btn{display:block;text-align:center;text-decoration:none;padding:14px 10px;border-radius:14px;font-weight:800;border:1px solid var(--accent)}
 .apple{background:var(--paper);color:var(--accent)}

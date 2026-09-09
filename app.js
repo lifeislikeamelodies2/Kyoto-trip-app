@@ -93,37 +93,41 @@
         <section class="top-dashboard" aria-label="旅行サポート">
           <a class="emergency-card" href="${esc(EMERGENCY_REGISTER_URL)}" target="_blank" rel="noopener">
             <span class="emergency-kicker">TRIP SAFETY</span>
-            <strong>緊急連絡先登録</strong>
-            <span class="emergency-copy">旅行中に必要な連絡先・対応情報を登録</span>
+            <strong>緊急連絡先</strong>
+            <span class="emergency-action">登録内容確認画面</span>
             <small>※登録内容を閲覧できるのは 12/4〜12/6 のみです</small>
           </a>
 
           <div class="next-plan-card">
             <div class="next-plan-head">
-              <span class="next-plan-label">次の予定</span>
+              <span class="next-plan-label">次の行先</span>
               <span class="next-plan-temp">暫定</span>
             </div>
             <div class="next-plan-title">${esc(TOP_NEXT_PLAN.title)}</div>
 
-            <div class="next-plan-times">
-              <div><span>移動開始</span><b id="nextMoveAt">${esc(formatPlanTime(TOP_NEXT_PLAN.moveAt))}</b></div>
-              <div><span>予定開始</span><b id="nextStartAt">${esc(formatPlanTime(TOP_NEXT_PLAN.startAt))}</b></div>
+            <div class="plan-compact-grid">
+              <div class="plan-compact-row">
+                <span class="plan-key">移動時間</span>
+                <b id="nextMoveAt">${esc(formatPlanTime(TOP_NEXT_PLAN.moveAt))}</b>
+                <span class="plan-count-label">移動時間まで</span>
+                <strong id="moveCountdown">${esc(minutesUntil(TOP_NEXT_PLAN.moveAt))}</strong>
+              </div>
+              <div class="plan-compact-row">
+                <span class="plan-key">予定開始</span>
+                <b id="nextStartAt">${esc(formatPlanTime(TOP_NEXT_PLAN.startAt))}</b>
+                <span class="plan-count-label">予定開始まで</span>
+                <strong id="startCountdown">${esc(minutesUntil(TOP_NEXT_PLAN.startAt))}</strong>
+              </div>
             </div>
 
-            <div class="countdown-grid">
-              <div class="countdown-box"><span>移動開始まで</span><strong id="moveCountdown">${esc(minutesUntil(TOP_NEXT_PLAN.moveAt))}</strong></div>
-              <div class="countdown-box"><span>予定開始まで</span><strong id="startCountdown">${esc(minutesUntil(TOP_NEXT_PLAN.startAt))}</strong></div>
-            </div>
-
-            <div class="top-current-time">現在 <span id="topNowClock">--:--</span></div>
-
+            <span id="topNowClock" hidden>--:--</span>
             <div class="next-map-row">
               ${nextApple
-                ? `<a href="${esc(nextApple)}" target="_blank" rel="noopener">Appleマップ</a>`
-                : `<span class="disabled">Appleマップ</span>`}
+                ? `<a href="${esc(nextApple)}" target="_blank" rel="noopener">Map</a>`
+                : `<span class="disabled">Map</span>`}
               ${nextGoogle
-                ? `<a href="${esc(nextGoogle)}" target="_blank" rel="noopener">Google Maps</a>`
-                : `<span class="disabled">Google Maps</span>`}
+                ? `<a href="${esc(nextGoogle)}" target="_blank" rel="noopener">Google Map</a>`
+                : `<span class="disabled">Google Map</span>`}
             </div>
           </div>
         </section>

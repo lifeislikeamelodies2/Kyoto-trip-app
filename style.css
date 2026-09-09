@@ -6,6 +6,8 @@
   --line:#ddd4c5;
   --accent:#393126;
   --soft:#eee7da;
+  --creative:#76556f;
+  --creativeSoft:#f2e9ef;
 }
 *{box-sizing:border-box}
 html{min-height:100%;background:var(--bg)}
@@ -25,7 +27,11 @@ button{font:inherit}
 h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:30px;line-height:1.35;margin:7px 0 4px}
 .address{font-size:13px;color:var(--muted);margin-bottom:20px}
 .spot-photo{margin:18px 0 8px;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#f9f6ef}
-.spot-photo img{display:block;width:100%;height:auto}
+.spot-photo img{display:block;width:100%;aspect-ratio:16/9;height:auto;object-fit:cover}
+.old-map-image{display:block;width:100%;height:auto;object-fit:contain;border-radius:14px;border:1px solid var(--line);background:#eee8dc}
+.old-map-area{font-size:13px;font-weight:800;margin-top:8px}
+.old-map-desc,.old-map-credit{font-size:12px;color:var(--muted);margin-top:4px}
+.old-map-credit a{color:inherit}
 .maps{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0 22px}
 .btn{display:block;text-align:center;text-decoration:none;padding:14px 10px;border-radius:14px;font-weight:800;border:1px solid var(--accent)}
 .apple{background:var(--paper);color:var(--accent)}
@@ -40,8 +46,10 @@ h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:30px;line-heig
 .grid{display:grid;gap:12px}
 .place-link{display:block;background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:15px 17px;color:var(--ink);text-decoration:none}
 .place-link small{display:block;color:var(--muted)}
+.creative-card{border-color:#d8c5d3;background:#fffafd}
 .meta-row{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 14px}
 .tag,.day-badge{display:inline-block;font-size:11px;font-weight:700;padding:4px 8px;border-radius:999px;background:var(--soft);color:var(--muted)}
+.tag.creative{background:var(--creativeSoft);border:1px solid #d8c5d3;color:var(--creative)}
 .filters{display:grid;gap:14px;margin:18px 0 20px;padding:14px;background:#f9f6ef;border:1px solid var(--line);border-radius:16px}
 .filter-title{font-size:12px;font-weight:800;color:var(--muted);margin-bottom:7px}
 .filter-row{display:flex;gap:7px;flex-wrap:wrap}

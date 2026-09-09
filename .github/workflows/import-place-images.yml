@@ -1,0 +1,130 @@
+name: Import place images
+
+on:
+  push:
+    paths:
+      - '.github/workflows/import-place-images.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  import-images:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download place images from Google Drive
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p assets/spots
+
+          download() {
+            local id="$1"
+            local out="$2"
+            echo "Downloading $out"
+            curl -L --fail --retry 3 \
+              "https://drive.usercontent.google.com/download?id=${id}&export=download&confirm=t" \
+              -o "$out"
+            file "$out"
+          }
+
+          download '1x5wFugIMaIBzF9x6iU0qnMQ2fos3jyeE' 'assets/spots/ryozen.jpg'
+          download '1w6R7DtKyT2k4EicGq4Hp_y7TK_pHI0p-' 'assets/spots/mibu.jpg'
+          download '1UahcEyu8A2QDR2M-_epokGG27SIBZvVU' 'assets/spots/nishi.jpg'
+          download '1yGkxCfRXus9ae0qG2Lrb_6N4volQixRH' 'assets/spots/daikakuji.jpg'
+          download '1fHVuSQiE6CC6PZPRGdg5nGhscfmJ5HXx' 'assets/spots/kitano.jpg'
+          download '1n6kgq2AgJY1cyJ7_KH25O5PnuEiCQWWu' 'assets/spots/higashi.jpg'
+          download '1PchIphFBfPStFTSYu8PKuacmA5qLejls' 'assets/spots/ikedaya.jpg'
+          download '1OEV2XzwkVY5OjFKCO-yOYtGJYWwQrDvL' 'assets/spots/kurodani.jpg'
+          download '1oQte882e32FX8qI5O2C6rwQYc4ewI4jv' 'assets/spots/hamaguri.jpg'
+          download '1VvV9doB2PGAjkTx1DOuJDjK2aLKEeFMe' 'assets/spots/choshu.jpg'
+          download '1l1ZjnvFDJM0q467UvMPKFRbHV9vKr-eM' 'assets/spots/katsura.jpg'
+          download '16W6_E-qk_hcO1-2x-e7dBEMBk67vFsF0' 'assets/spots/takatsukasa.jpg'
+          download '15JQjlzAMMxOzNFhVOr2A_dXtAH1eYMUJ' 'assets/spots/suzaku.jpg'
+
+          # 旧アプリで使用していた追加画像。現在ページ未登録だがGitHub内に保管する。
+          download '1hAyLObn0J5CqZ9ZfPjMMEde7gT0G63XF' 'assets/spots/pontocho.webp'
+          download '17-nnDTPn5P2CFOXPd_oxNGHsDN5OjxT6' 'assets/spots/shimabara.jpg'
+
+      - name: Link images to spot data and detail pages
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json, re
+
+          data_path = Path('data.js')
+          text = data_path.read_text(encoding='utf-8')
+          m = re.search(r'const SPOTS = (\[.*\]);\s*$', text, re.S)
+          if not m:
+              raise SystemExit('Could not find SPOTS array in data.js')
+
+          spots = json.loads(m.group(1))
+          images = {
+              'ryozen': 'assets/spots/ryozen.jpg',
+              'mibu': 'assets/spots/mibu.jpg',
+              'nishi': 'assets/spots/nishi.jpg',
+              'daikakuji': 'assets/spots/daikakuji.jpg',
+              'kitano': 'assets/spots/kitano.jpg',
+              'higashi': 'assets/spots/higashi.jpg',
+              'ikedaya': 'assets/spots/ikedaya.jpg',
+              'kurodani': 'assets/spots/kurodani.jpg',
+              'hamaguri': 'assets/spots/hamaguri.jpg',
+              'choshu': 'assets/spots/choshu.jpg',
+              'katsura': 'assets/spots/katsura.jpg',
+              'takatsukasa': 'assets/spots/takatsukasa.jpg',
+              'suzaku': 'assets/spots/suzaku.jpg',
+          }
+          for spot in spots:
+              if spot.get('id') in images:
+                  spot['image'] = images[spot['id']]
+
+          new_json = json.dumps(spots, ensure_ascii=False, separators=(',', ':'))
+          text = text[:m.start(1)] + new_json + text[m.end(1):]
+          data_path.write_text(text, encoding='utf-8')
+
+          app_path = Path('app.js')
+          app = app_path.read_text(encoding='utf-8')
+          marker = "    const dayText = (spot.days && spot.days.length) ? spot.days.join('・') : '日程未定';\n"
+          insert = marker + "    const photo = spot.image\n      ? `<figure class=\"spot-photo\"><img src=\"${esc(spot.image)}\" alt=\"${esc(spot.name)}の画像\" loading=\"eager\"></figure>`\n      : '';\n"
+          if 'const photo = spot.image' not in app:
+              if marker not in app:
+                  raise SystemExit('Could not find renderSpot dayText marker in app.js')
+              app = app.replace(marker, insert, 1)
+
+          old = "        <div class=\"meta-row\">${tags}<span class=\"day-badge\">${esc(dayText)}</span></div>\n        <div class=\"maps\">"
+          new = "        <div class=\"meta-row\">${tags}<span class=\"day-badge\">${esc(dayText)}</span></div>\n        ${photo}\n        <div class=\"maps\">"
+          if '${photo}' not in app:
+              if old not in app:
+                  raise SystemExit('Could not find renderSpot template marker in app.js')
+              app = app.replace(old, new, 1)
+          app_path.write_text(app, encoding='utf-8')
+
+          css_path = Path('style.css')
+          css = css_path.read_text(encoding='utf-8')
+          if '.spot-photo{' not in css:
+              marker_css = '.maps{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0 22px}\n'
+              addition = (
+                  '.spot-photo{margin:18px 0 8px;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#f9f6ef}\n'
+                  '.spot-photo img{display:block;width:100%;height:auto}\n'
+              )
+              if marker_css not in css:
+                  raise SystemExit('Could not find maps marker in style.css')
+              css = css.replace(marker_css, addition + marker_css, 1)
+          css_path.write_text(css, encoding='utf-8')
+          PY
+
+      - name: Commit imported images and page updates
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/spots data.js app.js style.css
+          if git diff --cached --quiet; then
+            echo 'No changes to commit.'
+          else
+            git commit -m 'Store place images in repository and show on spot pages'
+            git push
+          fi

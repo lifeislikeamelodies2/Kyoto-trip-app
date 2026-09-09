@@ -93,8 +93,8 @@
     const links = SPOTS.map(s => {
       const tags = s.tags || [];
       const days = (s.days && s.days.length) ? s.days : ['未定'];
-      const creative = tags.includes('創作');
-      const badges = tags.map(t => `<span class="tag${t === '創作' ? ' creative' : ''}">${esc(t)}</span>`).join('') +
+      const creative = tags.includes('創作関連');
+      const badges = tags.map(t => `<span class="tag${t === '創作関連' ? ' creative' : ''}">${esc(t)}</span>`).join('') +
         days.map(d => `<span class="day-badge">${esc(d)}</span>`).join('');
       return `<a class="place-link spot-card${creative ? ' creative-card' : ''}" href="${hrefFor({spot:s.id})}" data-route="spot=${encodeURIComponent(s.id)}" data-tags="${esc(tags.join('|'))}" data-days="${esc(days.join('|'))}">
         <b>${esc(s.name)}</b><small>${esc(s.category)}</small><span class="meta-row">${badges}</span>
@@ -146,10 +146,13 @@
   function renderSpot(spot) {
     document.title = `${spot.name}｜京都旅行`;
     document.body.className = '';
-    const tags = (spot.tags || []).map(t => `<span class="tag${t === '創作' ? ' creative' : ''}">${esc(t)}</span>`).join('');
+    const tags = (spot.tags || []).map(t => `<span class="tag${t === '創作関連' ? ' creative' : ''}">${esc(t)}</span>`).join('');
     const dayText = (spot.days && spot.days.length) ? spot.days.join('・') : '日程未定';
     const photo = spot.image
       ? `<figure class="spot-photo"><img src="${esc(spot.image)}" alt="${esc(spot.name)}の画像" loading="eager"></figure>`
+      : '';
+    const relatedFood = spot.relatedFoodId
+      ? `<section class="section related-place"><div class="label">現在の店舗・食事スポット</div><div class="related-copy">この場所では現在「個室居酒屋 池田屋 はなの舞 京都三条河原町店」が営業しています。</div><a class="related-link" href="${hrefFor({food:spot.relatedFoodId})}" data-route="food=${encodeURIComponent(spot.relatedFoodId)}">池田屋 はなの舞の食事ページを見る →</a><a class="related-list-link" href="${hrefFor({page:'food'})}" data-route="page=food">食事スポット一覧を見る</a></section>`
       : '';
     const oldMap = spot.oldMap
       ? `<section class="section old-map-section"><div class="label">幕末期周辺図</div><img class="old-map-image" src="${esc(spot.oldMap)}" alt="${esc((spot.oldMapArea || spot.name) + 'の幕末期周辺図')}" loading="lazy"><div class="old-map-area">${esc(spot.oldMapArea || '')}</div><div class="old-map-desc">元治元年（1864年）頃の位置関係をもとにした復元イメージです。</div><div class="old-map-credit">参考：<a href="${esc(OLD_MAP_SOURCE_URL)}" target="_blank" rel="noopener">${esc(OLD_MAP_SOURCE_NAME)}</a></div></section>`
@@ -166,6 +169,7 @@
           <a class="btn google" href="${esc(googleMapUrl(spot))}" target="_blank" rel="noopener">Google Mapsで開く</a>
         </div>
         ${oldMap}
+        ${relatedFood}
         <section class="section"><div class="label">営業時間・参拝可能時間</div><div class="hours">${esc(spot.hours)}</div></section>
         <section class="section"><div class="label">備考</div><div class="note">${esc(spot.note)}</div></section>
         <div class="source">情報確認：${esc(spot.checkedAt || UPDATED_AT)}　<a href="${esc(spot.source)}" target="_blank" rel="noopener">公式・参考情報</a></div>

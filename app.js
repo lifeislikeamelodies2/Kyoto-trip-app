@@ -94,8 +94,8 @@
           <a class="emergency-card" href="${esc(EMERGENCY_REGISTER_URL)}" target="_blank" rel="noopener">
             <span class="emergency-kicker">TRIP SAFETY</span>
             <strong>緊急連絡先</strong>
-            <span class="emergency-action">登録内容確認画面</span>
-            <small>※登録内容を閲覧できるのは 12/4〜12/6 のみです</small>
+            <span class="emergency-action">登録画面</span>
+            <small>※登録した内容の修正URLと内容QRコードは保持してください</small>
           </a>
 
           <div class="next-plan-card">

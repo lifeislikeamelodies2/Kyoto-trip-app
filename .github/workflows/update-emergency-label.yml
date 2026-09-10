@@ -1,0 +1,43 @@
+name: Update emergency registration label
+
+on:
+  push:
+    paths:
+      - '.github/workflows/update-emergency-label.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update emergency card text
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          app_path = Path('app.js')
+          app = app_path.read_text(encoding='utf-8')
+          app = app.replace('<span class="emergency-action">登録内容確認画面</span>', '<span class="emergency-action">登録画面</span>')
+          app = app.replace('※登録内容を閲覧できるのは 12/4〜12/6 のみです', '※登録した内容の修正URLと内容QRコードは保持してください')
+          app_path.write_text(app, encoding='utf-8')
+
+          index_path = Path('index.html')
+          index = index_path.read_text(encoding='utf-8')
+          import re
+          index = re.sub(r'(style\.css\?v=)[^"\']+', r'\g<1>20260910-2000', index)
+          index = re.sub(r'(data\.js\?v=)[^"\']+', r'\g<1>20260910-2000', index)
+          index = re.sub(r'(app\.js\?v=)[^"\']+', r'\g<1>20260910-2000', index)
+          index_path.write_text(index, encoding='utf-8')
+          PY
+      - name: Validate JavaScript
+        run: node --check app.js
+      - name: Commit changes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add app.js index.html
+          git commit -m 'Update emergency registration card text'
+          git push

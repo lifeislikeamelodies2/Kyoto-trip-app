@@ -1,0 +1,41 @@
+name: Match reservation button color
+
+on:
+  push:
+    paths:
+      - '.github/workflows/match-reservation-button-color.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Match reservation button to tourism button
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          sp = Path('style.css')
+          css = sp.read_text(encoding='utf-8')
+          css = css.replace('.top-button.reservation{background:#eee7da;color:var(--accent);border-color:#cfc3b2}', '.top-button.reservation{background:var(--accent);color:#fff;border-color:var(--accent)}')
+          sp.write_text(css, encoding='utf-8')
+
+          ip = Path('index.html')
+          index = ip.read_text(encoding='utf-8')
+          version = '20260912-0026'
+          index = re.sub(r'(style\.css\?v=)[^"\']+', rf'\g<1>{version}', index)
+          index = re.sub(r'(data\.js\?v=)[^"\']+', rf'\g<1>{version}', index)
+          index = re.sub(r'(app\.js\?v=)[^"\']+', rf'\g<1>{version}', index)
+          ip.write_text(index, encoding='utf-8')
+          PY
+      - name: Commit changes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add style.css index.html
+          git commit -m 'Match reservation button color to tourism button'
+          git push

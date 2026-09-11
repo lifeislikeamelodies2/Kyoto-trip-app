@@ -88,6 +88,7 @@
         <nav class="top-actions" aria-label="メインメニュー">
           <a class="top-button primary" href="${hrefFor({page:'tourism'})}" data-route="page=tourism">観光スポット一覧</a>
           <a class="top-button secondary" href="${hrefFor({page:'food'})}" data-route="page=food">食事スポット一覧</a>
+          <a class="top-button reservation" href="${hrefFor({page:'reservations'})}" data-route="page=reservations">予約済み一覧</a>
         </nav>
 
         <section class="top-dashboard" aria-label="旅行サポート">
@@ -279,6 +280,51 @@
     bindInternalLinks();
   }
 
+
+  function renderReservations() {
+    document.title = '予約済み一覧｜京都旅行';
+    document.body.className = '';
+
+    const schedule = [
+      {kind:'food', id:'ikedaya-hananomai', sort:'2026-12-04T18:30:00+09:00', time:'12月4日（金）18:30', note:'公式Webより予約済', type:'食事'},
+      {kind:'spot', id:'shouei', sort:'2026-12-04T21:00:00+09:00', time:'12月4日（金）21:00', note:'チェックイン（2泊／12月6日（日）10:00までにチェックアウト）', type:'宿泊'},
+      {kind:'spot', id:'shimabara', sort:'2026-12-05T14:15:00+09:00', time:'12月5日（土）14:15', note:'14:10集合／見学 約1時間10分', type:'観光'}
+    ];
+
+    const reservations = schedule.map(item => {
+      const source = item.kind === 'food'
+        ? FOOD_SPOTS.find(s => s.id === item.id)
+        : SPOTS.find(s => s.id === item.id);
+      return source ? {...source, ...item} : null;
+    }).filter(Boolean).sort((a,b) => new Date(a.sort) - new Date(b.sort));
+
+    const cards = reservations.map(s => {
+      const params = s.kind === 'food' ? {food:s.id} : {spot:s.id};
+      const route = `${s.kind}=${encodeURIComponent(s.id)}`;
+      const tags = [s.type, ...(s.tags || []).filter(t => t !== '予約済')];
+      const days = (s.days && s.days.length) ? s.days : [];
+      const badges = tags.map(t => `<span class="tag">${esc(t)}</span>`).join('') +
+        days.map(d => `<span class="day-badge">${esc(d)}</span>`).join('');
+      return `<a class="place-link reservation-list-card" href="${hrefFor(params)}" data-route="${route}">
+        <div class="reservation-list-time">${esc(s.time)}</div>
+        <b>${esc(s.name)}</b>
+        <small>${esc(s.category)}</small>
+        <span class="meta-row">${badges}</span>
+        <div class="reservation-list-summary"><span>予約・予定</span><strong>${esc(s.note)}</strong></div>
+      </a>`;
+    }).join('');
+
+    app.innerHTML = `
+      <main class="wrap"><div class="card">
+        <div class="page-nav"><a href="${hrefFor()}" data-route="">← TOP</a></div>
+        <div class="eyebrow">KYOTO TRIP</div>
+        <h1>予約済み一覧</h1>
+        <div class="reservation-list-intro">予約・集合時刻の早い順です。時刻は一覧上で確認でき、カードを押すと各スポットの詳細ページへ移動します。</div>
+        <div class="grid reservation-list-grid">${cards || '<div class="coming-soon">予約済みの予定はありません。</div>'}</div>
+      </div></main>`;
+    bindInternalLinks();
+  }
+
   function renderFood() {
     document.title = '食事スポット一覧｜京都旅行';
     document.body.className = '';
@@ -355,6 +401,7 @@
     }
     if (p.get('page') === 'tourism') return renderTourism();
     if (p.get('page') === 'food') return renderFood();
+    if (p.get('page') === 'reservations') return renderReservations();
     renderTop();
   }
 

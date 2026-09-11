@@ -236,7 +236,7 @@ h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:30px;line-heig
 
 
 /* Reservation list */
-.top-button.reservation{background:#eee7da;color:var(--accent);border-color:#cfc3b2}
+.top-button.reservation{background:var(--accent);color:#fff;border-color:var(--accent)}
 .reservation-list-intro{font-size:13px;color:var(--muted);margin:8px 0 18px}
 .reservation-list-grid{gap:14px}
 .reservation-list-card{padding:17px 18px}

@@ -231,3 +231,5 @@ h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:30px;line-heig
   .plan-key,.plan-count-label{font-size:7px}
   .plan-compact-row b,.plan-compact-row strong{font-size:10px}
 }
+
+.reservation-details{white-space:pre-wrap;font-size:15px;font-weight:800;line-height:1.65}

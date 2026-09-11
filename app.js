@@ -248,6 +248,9 @@
     const photo = spot.image
       ? `<figure class="spot-photo"><img src="${esc(spot.image)}" alt="${esc(spot.name)}の画像" loading="eager"></figure>`
       : '';
+    const spotReservation = spot.reservation
+      ? `<section class="section reservation-box"><div class="label">予約・予定</div><div class="reservation-details">${esc(spot.reservation)}</div></section>`
+      : '';
     const relatedFood = spot.relatedFoodId
       ? `<section class="section related-place"><div class="label">現在の店舗・食事スポット</div><div class="related-copy">この場所では現在「個室居酒屋 池田屋 はなの舞 京都三条河原町店」が営業しています。</div><a class="related-link" href="${hrefFor({food:spot.relatedFoodId})}" data-route="food=${encodeURIComponent(spot.relatedFoodId)}">池田屋 はなの舞の食事ページを見る →</a><a class="related-list-link" href="${hrefFor({page:'food'})}" data-route="page=food">食事スポット一覧を見る</a></section>`
       : '';
@@ -266,6 +269,7 @@
           <a class="btn google" href="${esc(googleMapUrl(spot))}" target="_blank" rel="noopener">Google Mapsで開く</a>
         </div>
         ${oldMap}
+        ${spotReservation}
         ${relatedFood}
         <section class="section"><div class="label">営業時間・参拝可能時間</div><div class="hours">${esc(spot.hours)}</div></section>
         <section class="section"><div class="label">備考</div><div class="note">${esc(spot.note)}</div></section>
@@ -314,7 +318,7 @@
       ? `<figure class="spot-photo"><img src="${esc(spot.image)}" alt="${esc(spot.name)}の画像" loading="eager"></figure>`
       : '';
     const reservation = spot.reservation
-      ? `<section class="section reservation-box"><div class="label">予約</div><div class="hours">${esc(spot.reservation)}</div></section>`
+      ? `<section class="section reservation-box"><div class="label">予約</div><div class="reservation-details">${esc(spot.reservation)}</div></section>`
       : '';
 
     app.innerHTML = `

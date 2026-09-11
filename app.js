@@ -25,6 +25,10 @@
 
   const navigate = (params = {}) => {
     history.pushState({}, '', hrefFor(params));
+    if (topClockTimer) {
+      clearInterval(topClockTimer);
+      topClockTimer = null;
+    }
     render();
     window.scrollTo({top:0, behavior:'instant'});
   };
@@ -306,11 +310,10 @@
       const badges = tags.map(t => `<span class="tag">${esc(t)}</span>`).join('') +
         days.map(d => `<span class="day-badge">${esc(d)}</span>`).join('');
       return `<a class="place-link reservation-list-card" href="${hrefFor(params)}" data-route="${route}">
-        <div class="reservation-list-time">${esc(s.time)}</div>
-        <b>${esc(s.name)}</b>
+        <b class="reservation-spot-name">${esc(s.name)}</b>
         <small>${esc(s.category)}</small>
         <span class="meta-row">${badges}</span>
-        <div class="reservation-list-summary"><span>予約・予定</span><strong>${esc(s.note)}</strong></div>
+        <div class="reservation-list-summary"><span>予定・予約</span><strong><span class="reservation-list-datetime">${esc(s.time)}</span><span class="reservation-list-note">${esc(s.note)}</span></strong></div>
       </a>`;
     }).join('');
 

@@ -1,0 +1,100 @@
+name: Optimize reservation transition
+
+on:
+  push:
+    paths:
+      - '.github/workflows/optimize-reservation-transition.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  optimize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Remove observer and render reservation UI directly
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          # app.js: stop TOP timer immediately on internal navigation.
+          ap = Path('app.js')
+          app = ap.read_text(encoding='utf-8')
+          old_nav = """  const navigate = (params = {}) => {
+    history.pushState({}, '', hrefFor(params));
+    render();
+    window.scrollTo({top:0, behavior:'instant'});
+  };"""
+          new_nav = """  const navigate = (params = {}) => {
+    history.pushState({}, '', hrefFor(params));
+    if (topClockTimer) {
+      clearInterval(topClockTimer);
+      topClockTimer = null;
+    }
+    render();
+    window.scrollTo({top:0, behavior:'instant'});
+  };"""
+          if old_nav in app:
+              app = app.replace(old_nav, new_nav, 1)
+
+          old_card = """      return `<a class=\"place-link reservation-list-card\" href=\"${hrefFor(params)}\" data-route=\"${route}\">
+        <div class=\"reservation-list-time\">${esc(s.time)}</div>
+        <b>${esc(s.name)}</b>
+        <small>${esc(s.category)}</small>
+        <span class=\"meta-row\">${badges}</span>
+        <div class=\"reservation-list-summary\"><span>予約・予定</span><strong>${esc(s.note)}</strong></div>
+      </a>`;"""
+          new_card = """      return `<a class=\"place-link reservation-list-card\" href=\"${hrefFor(params)}\" data-route=\"${route}\">
+        <b class=\"reservation-spot-name\">${esc(s.name)}</b>
+        <small>${esc(s.category)}</small>
+        <span class=\"meta-row\">${badges}</span>
+        <div class=\"reservation-list-summary\">
+          <span>予定・予約</span>
+          <strong><span class=\"reservation-list-datetime\">${esc(s.time)}</span><span class=\"reservation-list-note\">${esc(s.note)}</span></strong>
+        </div>
+      </a>`;"""
+          if old_card not in app:
+              raise SystemExit('Reservation card block not found')
+          app = app.replace(old_card, new_card, 1)
+          ap.write_text(app, encoding='utf-8')
+
+          # style.css: make the reservation button match tourism and bake in UI styles.
+          sp = Path('style.css')
+          css = sp.read_text(encoding='utf-8')
+          css = css.replace(
+              '.top-button.reservation{background:#eee7da;color:var(--accent);border-color:#cfc3b2}',
+              '.top-button.reservation{background:var(--accent);color:#fff;border-color:var(--accent)}'
+          )
+          extra = """
+/* Reservation UI direct-render optimization */
+.reservation-spot-name{display:block;font-size:19px;line-height:1.45;margin-bottom:2px}
+.reservation-list-summary strong{display:grid;gap:2px;font-size:14px;line-height:1.5}
+.reservation-list-datetime{display:block;font-size:16px;font-weight:900;color:var(--accent);font-variant-numeric:tabular-nums}
+.reservation-list-note{display:block;font-size:13px;font-weight:800}
+"""
+          if '/* Reservation UI direct-render optimization */' not in css:
+              css += extra
+          sp.write_text(css, encoding='utf-8')
+
+          # index.html: remove the MutationObserver helper and cache-bust core assets.
+          ip = Path('index.html')
+          index = ip.read_text(encoding='utf-8')
+          index = re.sub(r'\n\s*<script src="\./reservation-ui-fix\.js\?v=[^"]+"></script>', '', index)
+          version = '20260912-0040'
+          index = re.sub(r'(style\.css\?v=)[^"\']+', rf'\g<1>{version}', index)
+          index = re.sub(r'(data\.js\?v=)[^"\']+', rf'\g<1>{version}', index)
+          index = re.sub(r'(app\.js\?v=)[^"\']+', rf'\g<1>{version}', index)
+          ip.write_text(index, encoding='utf-8')
+          PY
+      - name: Validate JavaScript
+        run: |
+          node --check app.js
+      - name: Commit changes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add app.js style.css index.html
+          git commit -m 'Optimize reservation list transition'
+          git push

@@ -1,0 +1,126 @@
+name: Update booking information
+
+on:
+  push:
+    paths:
+      - '.github/workflows/update-bookings.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update booking details
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json, re
+
+          p = Path('data.js')
+          text = p.read_text(encoding='utf-8')
+
+          fm = re.search(r'const FOOD_SPOTS = (\[.*?\]);\nconst SPOTS = ', text, re.S)
+          sm = re.search(r'const SPOTS = (\[.*\]);\s*$', text, re.S)
+          if not fm or not sm:
+              raise SystemExit('Could not parse data.js')
+
+          foods = json.loads(fm.group(1))
+          spots = json.loads(sm.group(1))
+
+          def by_id(items, id_):
+              for x in items:
+                  if x.get('id') == id_:
+                      return x
+              raise SystemExit(f'Missing id: {id_}')
+
+          # 12/4 evening reservation
+          hana = by_id(foods, 'ikedaya-hananomai')
+          hana['reservation'] = '2026年12月4日（金）18:30（公式Webより予約済）'
+          hana['source'] = 'https://izakaya-hananomai.com/ikedaya/#carousel2'
+          hana['days'] = ['1日目']
+          hana['note'] = '池田屋事件の跡地にある新選組テーマの居酒屋。2026年12月4日（金）18:30、公式Webより予約済。店内には「池田屋大階段」「新選組の隊旗」「帳場」などの撮影スポットがある。画像は後日追加予定。'
+          hana['checkedAt'] = '2026-09-11'
+
+          # Accommodation. Reservation number is intentionally NOT stored in this public repository.
+          hotel = by_id(spots, 'shouei')
+          hotel['name'] = '湯の宿 松栄（ゆのやど しょうえい）'
+          hotel['address'] = '〒600-8826 京都府京都市下京区壬生川通正面西入ル'
+          hotel['category'] = '宿泊'
+          hotel['hours'] = 'チェックイン：2026年12月4日（金）21:00／2泊／チェックアウト：2026年12月6日（日）10:00まで'
+          hotel['reservation'] = '2026年12月4日（金）21:00 チェックイン\n2泊\n2026年12月6日（日）10:00までにチェックアウト\n料金：23,500円／人\n電話：075-351-4084'
+          hotel['note'] = '宿泊先は「湯の宿 松栄（ゆのやど しょうえい）」。2026年12月4日（金）21:00にチェックインし、12月6日（日）まで2泊。チェックアウトは10:00まで。料金は23,500円／人。宿への連絡先は075-351-4084。予約番号は公開ページには掲載せず、予約確認メール等で別途保管する。'
+          hotel['source'] = 'https://www.jalan.net/yad311665/'
+          hotel['days'] = ['1日目','2日目','3日目']
+          hotel['tags'] = ['宿泊','予約済']
+          hotel['mapQuery'] = '湯の宿 松栄 京都府京都市下京区壬生川通正面西入ル'
+          hotel['checkedAt'] = '2026-09-11'
+
+          # 12/5 Sumiya reservation
+          sumi = by_id(spots, 'shimabara')
+          sumi['name'] = '島原（花街・角屋）'
+          sumi['days'] = ['2日目']
+          # Keep existing historical/creative tags, append reservation tag only.
+          tags = [t for t in sumi.get('tags', []) if t != '予約済']
+          sumi['tags'] = tags + ['予約済']
+          sumi['reservation'] = '2026年12月5日（土）14:15〜（14:10集合）\n見学：約1時間10分\n※13:30までに到着できる場合は、1階を先に見学可能'
+          base_note = sumi.get('note','')
+          schedule_note = '【予約情報】2026年12月5日（土）14:15開始。14:10までに集合。所要は約1時間10分。13:30までに到着できる場合は、予約時間の前に1階を先に見学することも可能。'
+          if '【予約情報】' in base_note:
+              base_note = base_note.split('【予約情報】')[0].rstrip()
+          sumi['note'] = base_note + '\n\n' + schedule_note
+          sumi['source'] = 'https://sumiyaho.sakura.ne.jp'
+          sumi['checkedAt'] = '2026-09-11'
+
+          # Rebuild data.js, keeping constants before FOOD_SPOTS.
+          prefix = text[:fm.start(1)]
+          # prefix currently includes `const FOOD_SPOTS = `
+          suffix_marker = 'const FOOD_SPOTS = '
+          idx = prefix.rfind(suffix_marker)
+          if idx < 0:
+              raise SystemExit('FOOD_SPOTS prefix not found')
+          constants = prefix[:idx]
+          out = constants
+          out += 'const FOOD_SPOTS = ' + json.dumps(foods, ensure_ascii=False, separators=(',', ':')) + ';\n'
+          out += 'const SPOTS = ' + json.dumps(spots, ensure_ascii=False, separators=(',', ':')) + ';\n'
+          out = re.sub(r"const UPDATED_AT = '[^']+';", "const UPDATED_AT = '2026-09-11';", out, count=1)
+          p.write_text(out, encoding='utf-8')
+
+          # Add reservation box to tourism/accommodation detail pages too.
+          appp = Path('app.js')
+          app = appp.read_text(encoding='utf-8')
+          marker = "    const relatedFood = spot.relatedFoodId\n"
+          if "const spotReservation = spot.reservation" not in app:
+              insert = "    const spotReservation = spot.reservation\n      ? `<section class=\"section reservation-box\"><div class=\"label\">予約・予定</div><div class=\"reservation-details\">${esc(spot.reservation)}</div></section>`\n      : '';\n"
+              app = app.replace(marker, insert + marker, 1)
+          app = app.replace('        ${oldMap}\n        ${relatedFood}', '        ${oldMap}\n        ${spotReservation}\n        ${relatedFood}', 1)
+          app = app.replace('<section class="section reservation-box"><div class="label">予約</div><div class="hours">${esc(spot.reservation)}</div></section>', '<section class="section reservation-box"><div class="label">予約</div><div class="reservation-details">${esc(spot.reservation)}</div></section>')
+          appp.write_text(app, encoding='utf-8')
+
+          cssp = Path('style.css')
+          css = cssp.read_text(encoding='utf-8')
+          if '.reservation-details{' not in css:
+              css += '\n.reservation-details{white-space:pre-wrap;font-size:15px;font-weight:800;line-height:1.65}\n'
+          cssp.write_text(css, encoding='utf-8')
+
+          # Cache bust
+          ip = Path('index.html')
+          index = ip.read_text(encoding='utf-8')
+          index = re.sub(r'(style\.css\?v=)[^"\']+', r'\g<1>20260911-2310', index)
+          index = re.sub(r'(data\.js\?v=)[^"\']+', r'\g<1>20260911-2310', index)
+          index = re.sub(r'(app\.js\?v=)[^"\']+', r'\g<1>20260911-2310', index)
+          ip.write_text(index, encoding='utf-8')
+          PY
+      - name: Validate JavaScript
+        run: |
+          node --check data.js
+          node --check app.js
+      - name: Commit changes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data.js app.js style.css index.html
+          git commit -m 'Add confirmed booking and schedule details'
+          git push

@@ -60,21 +60,21 @@
 
   SPOTS.forEach(normalizeTags);
 
-  const reorderTagButtons = () => {
-    const buttons = [...document.querySelectorAll('.filter-btn[data-filter-type="tag"]')];
-    if (!buttons.length) return;
-    const row = buttons[0].parentElement;
-    if (!row) return;
-    const byValue = new Map(buttons.map((button) => [button.dataset.value, button]));
-    ['すべて', ...TAG_ORDER].forEach((value) => {
-      const button = byValue.get(value);
-      if (button) row.appendChild(button);
-    });
-  };
-
-  const appRoot = document.getElementById('app');
-  if (appRoot) {
-    new MutationObserver(reorderTagButtons).observe(appRoot, { childList: true, subtree: true });
-    reorderTagButtons();
-  }
+  // Filter buttons are ordered with CSS instead of repeatedly moving DOM nodes.
+  // The previous MutationObserver-based reordering could trigger itself continuously
+  // and make the page extremely slow or unresponsive on mobile Safari.
+  const style = document.createElement('style');
+  style.id = 'tourism-tag-order';
+  style.textContent = `
+    .filter-btn[data-filter-type="tag"][data-value="すべて"] { order: 0; }
+    .filter-btn[data-filter-type="tag"][data-value="新撰組"] { order: 1; }
+    .filter-btn[data-filter-type="tag"][data-value="長州"] { order: 2; }
+    .filter-btn[data-filter-type="tag"][data-value="土佐"] { order: 3; }
+    .filter-btn[data-filter-type="tag"][data-value="会津"] { order: 4; }
+    .filter-btn[data-filter-type="tag"][data-value="一般観光地"] { order: 5; }
+    .filter-btn[data-filter-type="tag"][data-value="事件地"] { order: 6; }
+    .filter-btn[data-filter-type="tag"][data-value="創作関連"] { order: 7; }
+    .filter-btn[data-filter-type="tag"][data-value="宿泊"] { order: 8; }
+  `;
+  document.head.appendChild(style);
 })();

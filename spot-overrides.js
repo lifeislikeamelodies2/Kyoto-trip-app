@@ -26,3 +26,45 @@
   spot.checkedAt = '2026-09-12';
   spot.oldMapArea = '千本通・丹波口・旧朱雀村・島原周辺／佐伯又三郎最期の地候補';
 })();
+
+// Latest itinerary PDF (2026/12/4-12/5) day assignments for the tourism list.
+(() => {
+  const dayAssignments = {
+    // 1日目｜12/4
+    daikakuji: ['1日目'],
+    kitano: ['1日目'],
+    suzaku: ['1日目'],
+    mibu: ['1日目'],
+    'saeki-home': ['1日目'],
+    nishi: ['1日目'],
+    higashi: ['1日目'],
+    ikedaya: ['1日目'],
+    choshu: ['1日目'],
+    katsura: ['1日目'],
+
+    // 先斗町・祇園は1日目は任意、2日目は夕食で訪問
+    pontocho: ['1日目', '2日目'],
+
+    // 2日目｜12/5
+    ryozen: ['2日目'],
+    'honma-seiichiro': ['2日目'],
+    shimabara: ['2日目'],
+    'asa-former-home': ['2日目'],
+    'fujii-home': ['2日目'],
+    hamaguri: ['2日目'],
+    takatsukasa: ['2日目'],
+    'omiya-site': ['2日目'],
+    'asa-home': ['2日目'],
+
+    // PDF記載の「2日目朝の代替案」
+    kurodani: ['2日目'],
+
+    // 宿泊先もPDFの両日に登場
+    shouei: ['1日目', '2日目']
+  };
+
+  // 旧工程のタグが残らないよう、PDFにない観光スポットは「未定」に戻す。
+  SPOTS.forEach((spot) => {
+    spot.days = dayAssignments[spot.id] ? [...dayAssignments[spot.id]] : [];
+  });
+})();

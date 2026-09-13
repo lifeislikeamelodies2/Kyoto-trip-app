@@ -1,5 +1,7 @@
 // Add itinerary spots and normalize tourism tags to the current eight-category system.
 (() => {
+  const TAG_ORDER = ['新撰組', '長州', '土佐', '会津', '一般観光地', '事件地', '創作関連', '宿泊'];
+
   const upsertSpot = (spot) => {
     const index = SPOTS.findIndex((item) => item.id === spot.id);
     if (index >= 0) {
@@ -53,8 +55,26 @@
     if (raw.has('創作関連')) add('創作関連');
     if (raw.has('宿泊')) add('宿泊');
 
-    spot.tags = normalized;
+    spot.tags = TAG_ORDER.filter((tag) => normalized.includes(tag));
   };
 
   SPOTS.forEach(normalizeTags);
+
+  const reorderTagButtons = () => {
+    const buttons = [...document.querySelectorAll('.filter-btn[data-filter-type="tag"]')];
+    if (!buttons.length) return;
+    const row = buttons[0].parentElement;
+    if (!row) return;
+    const byValue = new Map(buttons.map((button) => [button.dataset.value, button]));
+    ['すべて', ...TAG_ORDER].forEach((value) => {
+      const button = byValue.get(value);
+      if (button) row.appendChild(button);
+    });
+  };
+
+  const appRoot = document.getElementById('app');
+  if (appRoot) {
+    new MutationObserver(reorderTagButtons).observe(appRoot, { childList: true, subtree: true });
+    reorderTagButtons();
+  }
 })();

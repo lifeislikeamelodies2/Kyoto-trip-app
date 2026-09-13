@@ -214,7 +214,7 @@
   if (!app) return;
 
   const observer = new MutationObserver(() => renderCard());
-  observer.observe(app, { childList: true, subtree: true });
+  observer.observe(app, { childList: true });
 
   renderCard();
   window.setInterval(renderCard, 5000);

@@ -1,11 +1,11 @@
 (() => {
   const GALLERIES = {
     kamishichiken: [
-      { src: 'assets/spots/kamishichiken-02.webp', alt: '上七軒・上七軒歌舞練場の画像' }
+      { src: 'assets/spots/kamishichiken-02.avif', alt: '上七軒・上七軒歌舞練場の画像' }
     ],
     daikakuji: [
       { src: 'assets/spots/daikakuji.jpg', alt: '大覚寺の画像' },
-      { src: 'assets/spots/daikakuji-chiruran.webp', alt: '大覚寺の画像（ちるらん公式サイト掲載）', credit: '出典：ちるらん公式サイト' }
+      { src: 'assets/spots/daikakuji-chiruran.avif', alt: '大覚寺の画像（ちるらん公式サイト掲載）', credit: '出典：ちるらん公式サイト' }
     ]
   };
 

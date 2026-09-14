@@ -5,7 +5,7 @@
     ],
     daikakuji: [
       { src: 'assets/spots/daikakuji.jpg', alt: '大覚寺の画像' },
-      { src: 'assets/spots/daikakuji-chiruran.avif', alt: '大覚寺の画像（ちるらん公式サイト掲載）', credit: '出典：ちるらん公式サイト' }
+      { src: 'assets/spots/daikakuji-02.webp', alt: '大覚寺の境内・建物の画像' }
     ]
   };
 

@@ -6,6 +6,13 @@
     daikakuji: [
       { src: 'assets/spots/daikakuji.jpg', alt: '大覚寺の画像' },
       { src: 'assets/spots/daikakuji-02.avif', alt: '大覚寺の境内・建物の画像' }
+    ],
+    kurodani: [
+      { src: 'assets/spots/kurodani.jpg', alt: '金戒光明寺の画像' },
+      { src: 'assets/spots/kurodani-02.avif', alt: '金戒光明寺の画像（門前の場面）', credit: '出典：ちるらん公式Twitter並びにディザー映像' },
+      { src: 'assets/spots/kurodani-03.avif', alt: '金戒光明寺の画像（縁側の場面）', credit: '出典：ちるらん公式Twitter並びにディザー映像' },
+      { src: 'assets/spots/kurodani-04.avif', alt: '金戒光明寺の画像（人物集合の場面）', credit: '出典：ちるらん公式Twitter並びにディザー映像' },
+      { src: 'assets/spots/kurodani-05.avif', alt: '金戒光明寺の画像（石段の場面）', credit: '出典：ちるらん公式Twitter並びにディザー映像' }
     ]
   };
 

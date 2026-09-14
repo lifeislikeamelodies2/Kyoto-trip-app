@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Rebuild balanced WebP images and update gallery
+      - name: Rebuild balanced AVIF images
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -30,30 +30,21 @@ jobs:
               if not parts:
                   raise SystemExit(f'Missing parts for kurodani-{num}')
               payload = ''.join(p.read_text(encoding='utf-8').strip() for p in parts)
-              (spots / f'kurodani-{num}.webp').write_bytes(base64.b64decode(payload))
-
-          gallery = Path('spot-gallery.js')
-          text = gallery.read_text(encoding='utf-8')
-          text = text.replace("assets/spots/kurodani-02.avif", "assets/spots/kurodani-02.webp")
-          text = text.replace("assets/spots/kurodani-03.avif", "assets/spots/kurodani-03.webp")
-          text = text.replace("assets/spots/kurodani-04.avif", "assets/spots/kurodani-04.webp")
-          text = text.replace("assets/spots/kurodani-05.avif", "assets/spots/kurodani-05.webp")
-          gallery.write_text(text, encoding='utf-8')
+              (spots / f'kurodani-{num}.avif').write_bytes(base64.b64decode(payload))
 
           index = Path('index.html')
           html = index.read_text(encoding='utf-8')
           html = re.sub(r'(spot-gallery\.js\?v=)[^"\']+', r'\g<1>20260914-2345', html)
           index.write_text(html, encoding='utf-8')
 
-          for num in ('02', '03', '04', '05'):
-              old = spots / f'kurodani-{num}.avif'
-              if old.exists():
-                  old.unlink()
-
           for p in tmp.glob('kurodani-*'):
               p.unlink()
           if tmp.exists() and not any(tmp.iterdir()):
               tmp.rmdir()
+
+          workflow = Path('.github/workflows/rebuild-kurodani-images.yml')
+          if workflow.exists():
+              workflow.unlink()
           PY
 
       - name: Commit rebuilt images
@@ -61,5 +52,5 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
-          git commit -m 'Replace Kurodani gallery images with balanced WebP versions'
+          git commit -m 'Replace Kurodani gallery images with balanced high-quality versions'
           git push

@@ -19,7 +19,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for id in 02 03 04 05; do
+          cat upload_parts/test-small.txt | tr -d '\n\r ' | base64 -d > assets/spots/kurodani-02.avif
+          for id in 03 04 05; do
             cat upload_parts/kurodani-${id}.part* | tr -d '\n\r ' | base64 -d > assets/spots/kurodani-${id}.avif
           done
           python - <<'PY'

@@ -257,3 +257,127 @@ h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:30px;line-heig
 .reservation-list-summary strong{display:grid;gap:2px;font-size:14px;line-height:1.5}
 .reservation-list-datetime{display:block;font-size:16px;font-weight:900;color:var(--accent);font-variant-numeric:tabular-nums}
 .reservation-list-note{display:block;font-size:13px;font-weight:800}
+
+
+/* TOP journey map link 2026-10-15 */
+.journey-dashboard{
+  width:100%;
+  display:grid;
+  grid-template-columns:minmax(0,.58fr) minmax(0,.42fr);
+  gap:8px;
+  align-items:stretch;
+}
+.journey-summary-card,.journey-open-card{
+  min-width:0;
+  min-height:118px;
+  border:1.5px solid var(--accent);
+  border-radius:14px;
+}
+.journey-summary-card{
+  padding:11px 13px;
+  background:var(--paper);
+  display:flex;
+  flex-direction:column;
+}
+.journey-kicker,.journey-open-kicker{
+  display:block;
+  font-size:8px;
+  line-height:1.2;
+  letter-spacing:.12em;
+  font-weight:900;
+}
+.journey-kicker{color:var(--muted);margin-bottom:3px}
+.journey-summary-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+}
+.journey-summary-head>strong{
+  font-family:"Hiragino Mincho ProN","Yu Mincho",serif;
+  font-size:17px;
+  line-height:1.25;
+}
+#journeySyncState{
+  flex:none;
+  padding:2px 6px;
+  border:1px solid var(--line);
+  border-radius:999px;
+  font-size:7px;
+  line-height:1.4;
+  font-weight:900;
+  color:var(--muted);
+}
+.journey-distance-row{
+  margin-top:4px;
+  display:flex;
+  align-items:baseline;
+  gap:7px;
+  min-width:0;
+}
+.journey-distance-row b{
+  flex:none;
+  font-size:20px;
+  line-height:1.2;
+  color:var(--accent);
+  font-variant-numeric:tabular-nums;
+}
+.journey-distance-row small{
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:8px;
+  color:var(--muted);
+  font-weight:800;
+}
+.journey-meta,.journey-total{
+  font-size:8px;
+  line-height:1.35;
+  font-weight:800;
+}
+.journey-meta{margin-top:auto;color:var(--muted)}
+.journey-total{margin-top:2px;color:var(--accent)}
+.journey-open-card{
+  position:relative;
+  padding:12px 13px;
+  overflow:hidden;
+  background:var(--accent);
+  color:#fff;
+  text-decoration:none;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+.journey-open-kicker{color:rgba(255,255,255,.58);margin-bottom:5px}
+.journey-open-card strong{
+  font-family:"Hiragino Mincho ProN","Yu Mincho",serif;
+  font-size:21px;
+  line-height:1.2;
+}
+.journey-open-action{
+  margin-top:7px;
+  font-size:9px;
+  line-height:1.3;
+  font-weight:900;
+}
+.journey-open-arrow{
+  position:absolute;
+  right:12px;
+  bottom:8px;
+  font-family:Arial,sans-serif;
+  font-size:24px;
+  line-height:1;
+  opacity:.72;
+}
+@media(max-width:380px){
+  .journey-dashboard{grid-template-columns:minmax(0,.60fr) minmax(0,.40fr);gap:6px}
+  .journey-summary-card,.journey-open-card{min-height:108px;border-radius:12px}
+  .journey-summary-card{padding:9px 10px}
+  .journey-summary-head>strong{font-size:15px}
+  .journey-distance-row b{font-size:17px}
+  .journey-distance-row small,.journey-meta,.journey-total{font-size:7px}
+  .journey-open-card{padding:10px}
+  .journey-open-card strong{font-size:17px}
+  .journey-open-action{font-size:8px}
+  .journey-open-arrow{font-size:20px;right:9px;bottom:7px}
+}

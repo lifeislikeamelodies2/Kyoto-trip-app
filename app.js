@@ -292,7 +292,8 @@
     const schedule = [
       {kind:'food', id:'ikedaya-hananomai', sort:'2026-12-04T18:30:00+09:00', time:'12月4日（金）18:30', note:'公式Webより予約済', type:'食事'},
       {kind:'spot', id:'shouei', sort:'2026-12-04T21:00:00+09:00', time:'12月4日（金）21:00', note:'チェックイン（2泊／12月6日（日）10:00までにチェックアウト）', type:'宿泊'},
-      {kind:'spot', id:'shimabara', sort:'2026-12-05T14:15:00+09:00', time:'12月5日（土）14:15', note:'14:10集合／見学 約1時間10分', type:'観光'}
+      {kind:'spot', id:'shimabara', sort:'2026-12-05T14:15:00+09:00', time:'12月5日（土）14:15', note:'14:10集合／見学 約1時間10分', type:'観光'},
+      {kind:'food', id:'pontocho-suishin', sort:'2026-12-05T18:30:00+09:00', time:'12月5日（土）18:30', note:'ぐるなび予約済／6,050円・人', type:'食事'}
     ];
 
     const reservations = schedule.map(item => {

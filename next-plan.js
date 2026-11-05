@@ -1,8 +1,8 @@
 (() => {
   'use strict';
 
-  // 出発前テスト用：PDFの1日目・2日目を 2026/9/14・9/15 に移し、
-  // 9/16 は「PDF内に予定なし」の状態を確認する3日目として扱います。
+  // 出発前テスト用：修正版A案の1日目・2日目を 2026/11/6・11/7 に移し、
+  // 11/8 は「予定なし」の終了状態を確認する3日目として扱います。
   const TEST_RANGE = {
     start: '2026-11-06T00:00:00+09:00',
     end: '2026-11-08T23:59:59+09:00'
@@ -102,7 +102,7 @@
     },
     {
         "day": 1,
-        "title": "個室居酒屋 池田屋 はなの舞 京都三条河原町店｜予約",
+        "title": "個室居酒屋 池田屋 はなの舞 京都三条河原町店｜公式Web予約済",
         "startAt": "2026-11-06T18:30:00+09:00",
         "moveAt": "2026-11-06T18:05:00+09:00",
         "mapQuery": "個室居酒屋 池田屋 はなの舞 京都三条河原町店"
@@ -249,7 +249,7 @@
     },
     {
         "day": 2,
-        "title": "先斗町 すいしん 本店｜予約",
+        "title": "先斗町 すいしん 本店｜予約（6,050円／人）",
         "startAt": "2026-11-07T18:30:00+09:00",
         "moveAt": "2026-11-07T18:05:00+09:00",
         "mapQuery": "先斗町 すいしん 本店 京都"
@@ -270,14 +270,6 @@
     }
 ];
 
-  const UNTYPED_DAY1_EVENING = {
-    day: 1,
-    date: '2026-09-14',
-    title: '夕食後｜長州藩邸跡・桂小五郎像 → 先斗町・祇園（任意）',
-    timeLabel: '夕食後',
-    moveLabel: '時刻未定',
-    mapQuery: '長州藩邸跡 桂小五郎像 京都'
-  };
 
   const esc = (value) => String(value ?? '')
     .replace(/&/g, '&amp;')
@@ -329,10 +321,6 @@
     const next = PLANS.find((plan) => new Date(plan.startAt).getTime() > nowMs);
     const dayKey = dateKeyJst(now);
 
-    // 1日目18:30以降は、PDF上で時刻が固定されていない夕食後の予定を表示します。
-    if (dayKey === '2026-09-14' && nowMs >= new Date('2026-09-14T18:30:00+09:00').getTime()) {
-      return { kind: 'untimed', plan: UNTYPED_DAY1_EVENING };
-    }
 
     if (next) {
       return { kind: 'plan', plan: next };
@@ -388,27 +376,6 @@
       return;
     }
 
-    if (state.kind === 'untimed') {
-      const plan = state.plan;
-      card.innerHTML = `
-        <div class="next-plan-head">
-          <span class="next-plan-label">次の予定</span>
-          <span class="next-plan-temp">テスト 9/14・1日目</span>
-        </div>
-        <div class="next-plan-title">${esc(plan.title)}</div>
-        <div class="plan-compact-grid">
-          <div class="plan-compact-row">
-            <span class="plan-key">移動開始</span><b>${esc(plan.moveLabel)}</b>
-            <span class="plan-count-label">PDF記載</span><strong>時刻未定</strong>
-          </div>
-          <div class="plan-compact-row">
-            <span class="plan-key">予定開始</span><b>${esc(plan.timeLabel)}</b>
-            <span class="plan-count-label">予定開始まで</span><strong>—</strong>
-          </div>
-        </div>
-        <div class="next-map-row">${mapRowHtml(plan.mapQuery)}</div>`;
-      return;
-    }
 
     if (state.kind === 'empty-day3') {
       card.innerHTML = `

@@ -91,7 +91,7 @@
 
         <nav class="top-actions" aria-label="メインメニュー">
           <a class="top-button primary" href="${hrefFor({page:'tourism'})}" data-route="page=tourism">観光スポット一覧</a>
-          <a class="top-button secondary" href="${hrefFor({page:'food'})}" data-route="page=food">食事スポット一覧</a>
+          <a class="top-button secondary" href="${hrefFor({page:'food'})}" data-route="page=food-souvenir">グルメ・お土産スポット一覧</a>
           <a class="top-button reservation" href="${hrefFor({page:'reservations'})}" data-route="page=reservations">予約済み一覧</a>
         </nav>
 
@@ -257,7 +257,7 @@
       ? `<section class="section reservation-box"><div class="label">予約・予定</div><div class="reservation-details">${esc(spot.reservation)}</div></section>`
       : '';
     const relatedFood = spot.relatedFoodId
-      ? `<section class="section related-place"><div class="label">現在の店舗・食事スポット</div><div class="related-copy">この場所では現在「個室居酒屋 池田屋 はなの舞 京都三条河原町店」が営業しています。</div><a class="related-link" href="${hrefFor({food:spot.relatedFoodId})}" data-route="food=${encodeURIComponent(spot.relatedFoodId)}">池田屋 はなの舞の食事ページを見る →</a><a class="related-list-link" href="${hrefFor({page:'food'})}" data-route="page=food">食事スポット一覧を見る</a></section>`
+      ? `<section class="section related-place"><div class="label">現在の店舗・食事スポット</div><div class="related-copy">この場所では現在「個室居酒屋 池田屋 はなの舞 京都三条河原町店」が営業しています。</div><a class="related-link" href="${hrefFor({food:spot.relatedFoodId})}" data-route="food=${encodeURIComponent(spot.relatedFoodId)}">池田屋 はなの舞の食事ページを見る →</a><a class="related-list-link" href="${hrefFor({page:'food-souvenir'})}" data-route="page=food-souvenir">グルメ・お土産スポット一覧を見る</a></section>`
       : '';
     const oldMap = spot.oldMap
       ? `<section class="section old-map-section"><div class="label">幕末期周辺図</div><img class="old-map-image" src="${esc(spot.oldMap)}" alt="${esc((spot.oldMapArea || spot.name) + 'の幕末期周辺図')}" loading="lazy"><div class="old-map-area">${esc(spot.oldMapArea || '')}</div><div class="old-map-desc">元治元年（1864年）頃の位置関係をもとにした復元イメージです。</div><div class="old-map-credit">参考：<a href="${esc(OLD_MAP_SOURCE_URL)}" target="_blank" rel="noopener">${esc(OLD_MAP_SOURCE_NAME)}</a></div></section>`
@@ -330,32 +330,56 @@
   }
 
   function renderFood() {
-    document.title = '食事スポット一覧｜京都旅行';
+    document.title = 'グルメ・お土産スポット一覧｜京都旅行';
     document.body.className = '';
-
-    const links = FOOD_SPOTS.map(s => {
+    const all = [
+      ...FOOD_SPOTS.map(spot => ({spot, kind:'food'})),
+      ...SOUVENIR_SPOTS.map(spot => ({spot, kind:'souvenir'}))
+    ];
+    const links = all.map(({spot:s, kind}) => {
       const tags = s.tags || [];
       const days = (s.days && s.days.length) ? s.days : [];
       const badges = tags.map(t => `<span class="tag">${esc(t)}</span>`).join('') +
         days.map(d => `<span class="day-badge">${esc(d)}</span>`).join('');
       const reservation = s.reservation
-        ? `<div class="reservation-summary">予約：${esc(s.reservation)}</div>`
-        : '';
-      return `<a class="place-link food-card" href="${hrefFor({food:s.id})}" data-route="food=${encodeURIComponent(s.id)}">
-        <b>${esc(s.name)}</b><small>${esc(s.category)}</small><span class="meta-row">${badges}</span>${reservation}
+        ? `<div class="reservation-summary">予約：${esc(s.reservation)}</div>` : '';
+      const recommended = kind === 'souvenir' && s.recommended?.length
+        ? `<div class="shop-card-products">おすすめ：${esc(s.recommended.slice(0,3).join('／'))}</div>` : '';
+      const params = kind === 'food' ? {food:s.id} : {souvenir:s.id};
+      const route = kind === 'food' ? `food=${encodeURIComponent(s.id)}` : `souvenir=${encodeURIComponent(s.id)}`;
+      const categoryLabel = kind === 'food' ? '飲食店・甘味' : 'お土産・授与品';
+      return `<a class="place-link food-card shop-entry" data-shop-kind="${kind}" href="${hrefFor(params)}" data-route="${route}">
+        <span class="shop-kind-label">${categoryLabel}</span>
+        <b>${esc(s.name)}</b><small>${esc(s.category)}</small><span class="meta-row">${badges}</span>${recommended}${reservation}
       </a>`;
     }).join('');
-
     app.innerHTML = `
       <main class="wrap"><div class="card">
         <div class="page-nav"><a href="${hrefFor()}" data-route="">← TOP</a></div>
         <div class="eyebrow">KYOTO TRIP</div>
-        <h1>食事スポット一覧</h1>
-        ${FOOD_SPOTS.length
-          ? `<div class="grid">${links}</div>`
-          : `<div class="coming-soon"><strong>現在準備中です</strong>食事スポットが決まり次第、こちらに追加します。</div>`}
+        <h1>グルメ・お土産スポット一覧</h1>
+        <p class="shop-intro">食事・甘味とお土産をまとめて探せます。商品写真は掲載元のページで確認できます。</p>
+        <div class="filter-row shop-tabs" role="group" aria-label="スポット種別">
+          <button type="button" class="filter-btn active" data-shop-filter="all" aria-pressed="true">すべて（${all.length}）</button>
+          <button type="button" class="filter-btn" data-shop-filter="food" aria-pressed="false">飲食店（${FOOD_SPOTS.length}）</button>
+          <button type="button" class="filter-btn" data-shop-filter="souvenir" aria-pressed="false">お土産（${SOUVENIR_SPOTS.length}）</button>
+        </div>
+        ${all.length ? `<div class="grid">${links}</div>`
+          : `<div class="coming-soon"><strong>現在準備中です</strong>スポットが決まり次第、こちらに追加します。</div>`}
       </div></main>`;
     bindInternalLinks();
+    const buttons = app.querySelectorAll('[data-shop-filter]');
+    buttons.forEach(button => button.addEventListener('click', () => {
+      const chosen = button.getAttribute('data-shop-filter');
+      buttons.forEach(b => {
+        const active = b === button;
+        b.classList.toggle('active', active);
+        b.setAttribute('aria-pressed', String(active));
+      });
+      app.querySelectorAll('.shop-entry').forEach(entry => {
+        entry.hidden = chosen !== 'all' && entry.getAttribute('data-shop-kind') !== chosen;
+      });
+    }));
   }
 
   function renderFoodSpot(spot) {
@@ -386,7 +410,48 @@
         <section class="section"><div class="label">営業時間</div><div class="hours">${esc(spot.hours)}</div></section>
         <section class="section"><div class="label">備考</div><div class="note">${esc(spot.note)}</div></section>
         <div class="source">情報確認：${esc(spot.checkedAt || UPDATED_AT)}　<a href="${esc(spot.source)}" target="_blank" rel="noopener">公式・参考情報</a></div>
-        <a class="back" href="${hrefFor({page:'food'})}" data-route="page=food">← 食事スポット一覧へ</a>
+        <a class="back" href="${hrefFor({page:'food-souvenir'})}" data-route="page=food-souvenir">← グルメ・お土産スポット一覧へ</a>
+      </article></main>`;
+    bindInternalLinks();
+  }
+
+  function renderSouvenirSpot(spot) {
+    document.title = `${spot.name}｜京都旅行`;
+    document.body.className = '';
+    const tags = (spot.tags || []).map(t => `<span class="tag">${esc(t)}</span>`).join('');
+    const recommended = (spot.recommended || []).slice(0,3)
+      .map(item => `<li>${esc(item)}</li>`).join('');
+    const photoReference = spot.photoPage
+      ? `<section class="section souvenir-photo-section">
+          <div class="label">商品写真・店舗写真</div>
+          <p class="shop-photo-note">写真は掲載元でご覧ください。第三者の画像をこの公開アプリに無断転載しない形でご案内しています。</p>
+          <a class="photo-source-link" href="${esc(spot.photoPage)}" target="_blank" rel="noopener noreferrer">商品・店舗の写真を見る（掲載元）</a>
+          <div class="shop-photo-credit">掲載元：${esc(spot.photoCredit || '公式・参考サイト')}</div>
+        </section>` : '';
+    const altMap = spot.alternateMapQuery
+      ? `<a class="souvenir-alt-map" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(spot.alternateMapQuery)}" target="_blank" rel="noopener noreferrer">${esc(spot.alternateLabel || '別店舗を地図で探す')}</a>`
+      : '';
+    app.innerHTML = `
+      <main class="wrap"><article class="card">
+        <div class="eyebrow">${esc(spot.category)} ｜ KYOTO TRIP</div>
+        <h1>${esc(spot.name)}</h1>
+        <div class="address">${esc(spot.address)}</div>
+        <div class="meta-row">${tags}</div>
+        ${photoReference}
+        <section class="section">
+          <div class="label">おすすめ商品・授与品</div>
+          <ol class="souvenir-products">${recommended}</ol>
+          <p class="shop-product-note">在庫・季節商品・授与品の内容は訪問時にご確認ください。</p>
+        </section>
+        <div class="maps">
+          <a class="btn apple" href="${esc(appleMapUrl(spot))}" target="_blank" rel="noopener noreferrer">Appleマップで開く</a>
+          <a class="btn google" href="${esc(googleMapUrl(spot))}" target="_blank" rel="noopener noreferrer">Google Mapsで開く</a>
+        </div>
+        ${altMap}
+        <section class="section"><div class="label">営業時間・授与時間</div><div class="hours">${esc(spot.hours)}</div></section>
+        <section class="section"><div class="label">備考</div><div class="note">${esc(spot.note)}</div></section>
+        <div class="source">情報確認：${esc(spot.checkedAt || UPDATED_AT)}　<a href="${esc(spot.source)}" target="_blank" rel="noopener noreferrer">公式・参考情報</a></div>
+        <a class="back" href="${hrefFor({page:'food-souvenir'})}" data-route="page=food-souvenir">← グルメ・お土産スポット一覧へ</a>
       </article></main>`;
     bindInternalLinks();
   }
@@ -398,13 +463,18 @@
       const spot = SPOTS.find(s => s.id === spotId);
       if (spot) return renderSpot(spot);
     }
+    const souvenirId = p.get('souvenir');
+    if (souvenirId) {
+      const souvenir = SOUVENIR_SPOTS.find(s => s.id === souvenirId);
+      if (souvenir) return renderSouvenirSpot(souvenir);
+    }
     const foodId = p.get('food');
     if (foodId) {
       const food = FOOD_SPOTS.find(s => s.id === foodId);
       if (food) return renderFoodSpot(food);
     }
     if (p.get('page') === 'tourism') return renderTourism();
-    if (p.get('page') === 'food') return renderFood();
+    if (p.get('page') === 'food' || p.get('page') === 'food-souvenir') return renderFood();
     if (p.get('page') === 'reservations') return renderReservations();
     renderTop();
   }

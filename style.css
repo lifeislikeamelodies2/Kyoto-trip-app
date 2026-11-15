@@ -381,3 +381,17 @@ h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:30px;line-heig
   .journey-open-action{font-size:8px}
   .journey-open-arrow{font-size:20px;right:9px;bottom:7px}
 }
+
+/* Combined dining and souvenir listing */
+.shop-intro{font-size:13px;color:var(--muted);margin:10px 0 14px}
+.shop-tabs{margin:10px 0 18px;gap:8px}
+.shop-kind-label{display:inline-block;border-radius:6px;background:var(--soft);color:var(--accent);padding:2px 7px;font-size:11px;font-weight:800;margin-bottom:7px}
+.shop-card-products{margin:7px 0 4px;font-size:12px;line-height:1.65;color:var(--muted)}
+.shop-entry[hidden]{display:none!important}
+.souvenir-photo-section{margin-top:18px}
+.shop-photo-note,.shop-product-note{font-size:12px;color:var(--muted);margin:5px 0 10px}
+.photo-source-link{display:block;padding:14px 10px;border-radius:14px;background:var(--accent);color:white;text-align:center;font-weight:800;text-decoration:none}
+.shop-photo-credit{font-size:11px;color:var(--muted);margin-top:6px}
+.souvenir-products{padding-left:1.4em;margin:8px 0 12px;line-height:1.85;font-weight:600}
+.souvenir-products li{padding:3px 0}
+.souvenir-alt-map{display:block;margin-top:-10px;margin-bottom:20px;text-align:center;color:var(--accent);font-size:13px;font-weight:800}

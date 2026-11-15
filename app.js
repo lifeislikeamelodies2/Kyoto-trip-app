@@ -91,7 +91,7 @@
 
         <nav class="top-actions" aria-label="メインメニュー">
           <a class="top-button primary" href="${hrefFor({page:'tourism'})}" data-route="page=tourism">観光スポット一覧</a>
-          <a class="top-button secondary" href="${hrefFor({page:'food'})}" data-route="page=food-souvenir">グルメ・お土産スポット一覧</a>
+          <a class="top-button secondary" href="${hrefFor({page:'food-souvenir'})}" data-route="page=food-souvenir">グルメ・お土産スポット一覧</a>
           <a class="top-button reservation" href="${hrefFor({page:'reservations'})}" data-route="page=reservations">予約済み一覧</a>
         </nav>
 
